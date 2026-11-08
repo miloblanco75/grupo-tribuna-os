@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dc2626"/>
+      <stop offset="50%" stop-color="#991b1b"/>
+      <stop offset="100%" stop-color="#450a0a"/>
+    </linearGradient>
+    <linearGradient id="goldGrad512" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#eab308"/>
+      <stop offset="100%" stop-color="#ca8a04"/>
+    </linearGradient>
+    <filter id="shadow512" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+
+  <!-- Background Squircle -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bgGrad512)"/>
+  
+  <!-- Subtle Christmas Sphere Halo -->
+  <circle cx="256" cy="226" r="144" fill="none" stroke="url(#goldGrad512)" stroke-width="8" opacity="0.4" stroke-dasharray="16,10"/>
+  <rect x="242" y="64" width="28" height="22" rx="6" fill="url(#goldGrad512)" opacity="0.6"/>
+  <circle cx="256" cy="58" r="16" fill="none" stroke="url(#goldGrad512)" stroke-width="6" opacity="0.6"/>
+
+  <!-- Sparkles -->
+  <polygon points="386,133 394,160 421,168 394,176 386,203 378,176 351,168 378,160" fill="#fde047" opacity="0.85"/>
+  <polygon points="120,306 125,322 141,327 125,332 120,348 115,332 99,327 115,322" fill="#fde047" opacity="0.75"/>
+
+  <!-- Logo GT Monogram -->
+  <text x="256" y="298" font-family="Plus Jakarta Sans, system-ui, -apple-system, sans-serif" font-size="192" font-weight="900" fill="#ffffff" text-anchor="middle" filter="url(#shadow512)" letter-spacing="-6">
+    GT
+  </text>
+
+  <!-- Golden Banner -->
+  <rect x="74" y="362" width="364" height="70" rx="35" fill="url(#goldGrad512)" filter="url(#shadow512)"/>
+  <text x="256" y="407" font-family="Plus Jakarta Sans, system-ui, -apple-system, sans-serif" font-size="32" font-weight="900" fill="#0f172a" text-anchor="middle" letter-spacing="5">
+    GRUPO TRIBUNA
+  </text>
+</svg>

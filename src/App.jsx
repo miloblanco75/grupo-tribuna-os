@@ -12,6 +12,7 @@ import AmenitiesManager from './components/AmenitiesManager';
 import ExpansionPipelineManager from './components/ExpansionPipelineManager';
 import ExportCatalogManager from './components/ExportCatalogManager';
 import ChignahuapanLogisticsManager from './components/ChignahuapanLogisticsManager';
+import InstallPromptModal from './components/InstallPromptModal';
 
 import { 
   INITIAL_PROJECTS, 
@@ -79,6 +80,7 @@ export default function App() {
   const [currentTab, setCurrentTab] = useState('dashboard');
   const [selectedProjectId, setSelectedProjectId] = useState('prj-motul');
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
   // Guardar automáticamente en localStorage cuando haya cambios
   useEffect(() => {
@@ -355,6 +357,7 @@ export default function App() {
           setSelectedProjectId('prj-motul');
           setCurrentTab('projects');
         }}
+        onOpenInstallModal={() => setIsInstallModalOpen(true)}
       />
 
       {/* Contenido Principal según Pestaña */}
@@ -499,6 +502,12 @@ export default function App() {
         permits={permits}
         amenities={amenities}
         pipeline={pipeline}
+      />
+
+      {/* Modal / Banner de Instalación de App e Ícono en Celular */}
+      <InstallPromptModal
+        forceOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
       />
 
     </div>

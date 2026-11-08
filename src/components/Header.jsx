@@ -20,7 +20,8 @@ export default function Header({
   setActiveEmployee, 
   onOpenReportModal,
   pendingTasksCount,
-  onOpenMotul
+  onOpenMotul,
+  onOpenInstallModal
 }) {
   return (
     <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-lg">
@@ -47,6 +48,17 @@ export default function Header({
 
           {/* Navigation Controls */}
           <div className="flex items-center space-x-2 sm:space-x-3">
+            
+            {/* Install PWA App Button */}
+            <button
+              onClick={onOpenInstallModal}
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-xs sm:text-sm border border-red-400/40 animate-pulse"
+              title="Instalar ícono en pantalla de inicio de tu celular"
+            >
+              <span>📲</span>
+              <span className="hidden sm:inline">Instalar App</span>
+              <span className="sm:hidden">App</span>
+            </button>
             
             {/* Acceso Directo a Motul */}
             <button
