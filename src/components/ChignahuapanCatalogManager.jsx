@@ -79,6 +79,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
 
   // Persistir en localStorage
   React.useEffect(() => {
+    localStorage.removeItem('tribuna_spheres_catalog_v1');
+    localStorage.removeItem('tribuna_consolidated_cart_v1');
     localStorage.setItem('tribuna_spheres_catalog_v2_custom', JSON.stringify(catalog));
   }, [catalog]);
 
