@@ -461,31 +461,31 @@ export const INITIAL_SPHERES_CATALOG = [];
 export const INITIAL_SAVED_PURCHASE_ORDERS = [];
 
 // ============================================================================
-// FÓRMULA DE COSTOS, TRANSPORTE Y UTILIDAD EN CASCADA GRUPO TRIBUNA
-// Fórmula: Costo Artesano x 18% x 13% x 13% x 28% x 12% (~2.16x multiplicador)
+// FÓRMULA DE COSTOS, TRANSPORTE Y UTILIDAD GRUPO TRIBUNA
+// OPCIÓN 1 (Recomendada / Activa): Suma Directa de Porcentajes sobre Costo Base
+// 100 + 18% + 13% + 13% + 28% + 12% = +84% sobre costo base ($100 ➔ $184.00 MXN)
 // ============================================================================
-export const PRICING_CASCADING_FACTORS = [
-  { key: 'castoresFreight', label: 'Flete Nacional Castores', percent: 18, factor: 1.18, icon: '🚚', description: 'Convenio corporativo Castores salidas diarias' },
-  { key: 'troncalFreight', label: 'Flete Troncal Chignahuapan ➔ Puebla', percent: 13, factor: 1.13, icon: '🚐', description: 'Shuttle Sprinter suspensión neumática' },
-  { key: 'packagingProtection', label: 'Embalaje Especializado Antishock', percent: 13, factor: 1.13, icon: '📦', description: 'Cajas doble corrugado, burbuja y esquineros' },
-  { key: 'tribunaProfit', label: 'Utilidad Neta Grupo Tribuna', percent: 28, factor: 1.28, icon: '💎', description: 'Margen de comercialización y ganancia neta' },
-  { key: 'hubHandlingMerma', label: 'Acopio Hub Chignahuapan & Merma', percent: 12, factor: 1.12, icon: '🏢', description: 'Operación bodega, etiquetado y seguro de merma' }
+export const PRICING_PERCENTAGES = [
+  { key: 'castoresFreight', label: 'Flete Nacional Castores', percent: 18, rate: 0.18, icon: '🚚', description: 'Convenio corporativo Castores salidas diarias' },
+  { key: 'troncalFreight', label: 'Flete Troncal Chignahuapan ➔ Puebla', percent: 13, rate: 0.13, icon: '🚐', description: 'Shuttle Sprinter suspensión neumática' },
+  { key: 'packagingProtection', label: 'Embalaje Especializado Antishock', percent: 13, rate: 0.13, icon: '📦', description: 'Cajas doble corrugado, burbuja y esquineros' },
+  { key: 'tribunaProfit', label: 'Utilidad Neta Grupo Tribuna', percent: 28, rate: 0.28, icon: '💎', description: 'Margen de ganancia neta Grupo Tribuna' },
+  { key: 'hubHandlingMerma', label: 'Acopio Hub Chignahuapan & Merma', percent: 12, rate: 0.12, icon: '🏢', description: 'Operación bodega, etiquetado y merma' }
 ];
 
-export const TOTAL_CASCADING_MULTIPLIER = 1.18 * 1.13 * 1.13 * 1.28 * 1.12; // 2.160065...
+export const TOTAL_DIRECT_PERCENTAGE = 18 + 13 + 13 + 28 + 12; // 84%
+export const TOTAL_DIRECT_MULTIPLIER = 1.84; // 1 + 0.84 = 1.84x
+export const TOTAL_CASCADING_MULTIPLIER = 1.18 * 1.13 * 1.13 * 1.28 * 1.12; // ~2.16x
 
-export function calculateCascadingPricing(baseCost) {
+// OPCIÓN 1: Suma Directa de Porcentajes sobre el costo base (100 -> 184)
+export function calculateDirectSumPricing(baseCost) {
   const cost = Number(baseCost) || 0;
   if (cost <= 0) {
     return {
       baseCost: 0,
-      steps: [
-        { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: 0, subtotal: 0 },
-        { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: 0, subtotal: 0 },
-        { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: 0, subtotal: 0 },
-        { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: 0, subtotal: 0 },
-        { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: 0, subtotal: 0 }
-      ],
+      mode: 'direct',
+      totalPercentage: 84,
+      multiplier: 1.84,
       castoresAmount: 0,
       troncalAmount: 0,
       packagingAmount: 0,
@@ -493,7 +493,74 @@ export function calculateCascadingPricing(baseCost) {
       handlingAmount: 0,
       totalAdded: 0,
       finalPrice: 0,
-      recommendedWholesalePrice: 0
+      recommendedWholesalePrice: 0,
+      steps: [
+        { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: 0, icon: '🚚' },
+        { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: 0, icon: '🚐' },
+        { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: 0, icon: '📦' },
+        { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: 0, icon: '💎' },
+        { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: 0, icon: '🏢' }
+      ]
+    };
+  }
+
+  const castoresAmount = Math.round(cost * 0.18 * 100) / 100;
+  const troncalAmount = Math.round(cost * 0.13 * 100) / 100;
+  const packagingAmount = Math.round(cost * 0.13 * 100) / 100;
+  const profitAmount = Math.round(cost * 0.28 * 100) / 100;
+  const handlingAmount = Math.round(cost * 0.12 * 100) / 100;
+
+  const totalAdded = Math.round((castoresAmount + troncalAmount + packagingAmount + profitAmount + handlingAmount) * 100) / 100;
+  const finalPrice = Math.round((cost + totalAdded) * 100) / 100;
+  const recommendedWholesalePrice = Math.round(finalPrice);
+
+  return {
+    baseCost: cost,
+    mode: 'direct',
+    totalPercentage: 84,
+    multiplier: 1.84,
+    castoresAmount,
+    troncalAmount,
+    packagingAmount,
+    profitAmount,
+    handlingAmount,
+    totalAdded,
+    finalPrice,
+    recommendedWholesalePrice,
+    steps: [
+      { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: castoresAmount, icon: '🚚' },
+      { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: troncalAmount, icon: '🚐' },
+      { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: packagingAmount, icon: '📦' },
+      { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: profitAmount, icon: '💎' },
+      { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: handlingAmount, icon: '🏢' }
+    ]
+  };
+}
+
+// OPCIÓN 2: Multiplicativo en Cascada (100 -> 216)
+export function calculateCascadingPricing(baseCost) {
+  const cost = Number(baseCost) || 0;
+  if (cost <= 0) {
+    return {
+      baseCost: 0,
+      mode: 'cascade',
+      totalPercentage: 116,
+      multiplier: 2.16,
+      castoresAmount: 0,
+      troncalAmount: 0,
+      packagingAmount: 0,
+      profitAmount: 0,
+      handlingAmount: 0,
+      totalAdded: 0,
+      finalPrice: 0,
+      recommendedWholesalePrice: 0,
+      steps: [
+        { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: 0, subtotal: 0, icon: '🚚' },
+        { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: 0, subtotal: 0, icon: '🚐' },
+        { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: 0, subtotal: 0, icon: '📦' },
+        { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: 0, subtotal: 0, icon: '💎' },
+        { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: 0, subtotal: 0, icon: '🏢' }
+      ]
     };
   }
 
@@ -517,12 +584,15 @@ export function calculateCascadingPricing(baseCost) {
 
   return {
     baseCost: cost,
+    mode: 'cascade',
+    totalPercentage: 116,
+    multiplier: 2.16,
     steps: [
-      { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: Math.round(castoresAmount * 100) / 100, subtotal: Math.round(s1 * 100) / 100 },
-      { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: Math.round(troncalAmount * 100) / 100, subtotal: Math.round(s2 * 100) / 100 },
-      { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: Math.round(packagingAmount * 100) / 100, subtotal: Math.round(s3 * 100) / 100 },
-      { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: Math.round(profitAmount * 100) / 100, subtotal: Math.round(s4 * 100) / 100 },
-      { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: Math.round(handlingAmount * 100) / 100, subtotal: Math.round(s5 * 100) / 100 }
+      { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: Math.round(castoresAmount * 100) / 100, subtotal: Math.round(s1 * 100) / 100, icon: '🚚' },
+      { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: Math.round(troncalAmount * 100) / 100, subtotal: Math.round(s2 * 100) / 100, icon: '🚐' },
+      { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: Math.round(packagingAmount * 100) / 100, subtotal: Math.round(s3 * 100) / 100, icon: '📦' },
+      { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: Math.round(profitAmount * 100) / 100, subtotal: Math.round(s4 * 100) / 100, icon: '💎' },
+      { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: Math.round(handlingAmount * 100) / 100, subtotal: Math.round(s5 * 100) / 100, icon: '🏢' }
     ],
     castoresAmount: Math.round(castoresAmount * 100) / 100,
     troncalAmount: Math.round(troncalAmount * 100) / 100,
@@ -534,4 +604,15 @@ export function calculateCascadingPricing(baseCost) {
     recommendedWholesalePrice
   };
 }
+
+// Función maestra: por defecto utiliza OPCIÓN 1 (Suma Directa +84%)
+export function calculateTribunaPricing(baseCost, mode = 'direct') {
+  if (mode === 'cascade') {
+    return calculateCascadingPricing(baseCost);
+  }
+  return calculateDirectSumPricing(baseCost);
+}
+
+// Alias para compatibilidad hacia atrás
+export const PRICING_CASCADING_FACTORS = PRICING_PERCENTAGES;
 

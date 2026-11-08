@@ -35,8 +35,11 @@ import {
   SPHERE_NUMBERS,
   SPHERE_TYPES,
   INITIAL_ARTISANS,
+  calculateDirectSumPricing,
   calculateCascadingPricing,
-  PRICING_CASCADING_FACTORS,
+  calculateTribunaPricing,
+  PRICING_PERCENTAGES,
+  TOTAL_DIRECT_MULTIPLIER,
   TOTAL_CASCADING_MULTIPLIER
 } from '../data/chignahuapanData';
 
@@ -81,13 +84,16 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [editingModelId, setEditingModelId] = useState(null);
 
+  // Modo de cálculo de fórmula: 'direct' (Opción 1: Suma Directa +84% ➔ $184) | 'cascade' (Opción 2: Cascada +116% ➔ $216)
+  const [pricingMode, setPricingMode] = useState('direct');
+
   const fileInputRef = useRef(null);
   const [searchFilter, setSearchFilter] = useState('');
 
-  // Desglose de cálculo en cascada para el costo ingresado en el formulario (18% x 13% x 13% x 28% x 12%)
-  const formCascade = useMemo(() => {
-    return calculateCascadingPricing(formArtisanCost);
-  }, [formArtisanCost]);
+  // Desglose de cálculo para el costo ingresado en el formulario
+  const formPricing = useMemo(() => {
+    return calculateTribunaPricing(formArtisanCost, pricingMode);
+  }, [formArtisanCost, pricingMode]);
 
   // Persistir en localStorage
   React.useEffect(() => {
@@ -157,8 +163,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     }
 
     const costNum = Number(formArtisanCost);
-    const calculatedCascade = calculateCascadingPricing(costNum);
-    const saleNum = formWholesalePrice ? Number(formWholesalePrice) : calculatedCascade.recommendedWholesalePrice;
+    const calculatedPricing = calculateTribunaPricing(costNum, pricingMode);
+    const saleNum = formWholesalePrice ? Number(formWholesalePrice) : calculatedPricing.recommendedWholesalePrice;
 
     if (editingModelId) {
       // Actualizar modelo existente
@@ -172,14 +178,15 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
           piecesPerPack: Number(formPiecesPerPack) || 12,
           artisanCost: costNum,
           wholesalePrice: saleNum,
-          cascadeBreakdown: calculatedCascade,
+          pricingMode,
+          pricingBreakdown: calculatedPricing,
           artisanProvider: formArtisanProvider.trim(),
           photoUrl: formPhotoUrl || item.photoUrl,
           notes: formNotes.trim()
         };
       }));
       setEditingModelId(null);
-      alert(`✅ Modelo "${formModelName}" actualizado correctamente con fórmula en cascada.`);
+      alert(`✅ Modelo "${formModelName}" actualizado correctamente.`);
     } else {
       // Crear nuevo modelo
       const newModel = {
@@ -191,7 +198,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
         piecesPerPack: Number(formPiecesPerPack) || 12,
         artisanCost: costNum,
         wholesalePrice: saleNum,
-        cascadeBreakdown: calculatedCascade,
+        pricingMode,
+        pricingBreakdown: calculatedPricing,
         artisanProvider: formArtisanProvider.trim() || 'Taller Chignahuapan',
         photoUrl: formPhotoUrl || '',
         notes: formNotes.trim(),
@@ -289,8 +297,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
       }
     });
 
-    // Desglose de totales con la fórmula en cascada
-    const cascadeTotals = calculateCascadingPricing(totalArtisanCost);
+    // Desglose de totales con la fórmula activa (Opción 1: Suma Directa +84%)
+    const cascadeTotals = calculateTribunaPricing(totalArtisanCost, pricingMode);
 
     const projectedProfit = totalWholesaleValue - totalArtisanCost;
     const marginPct = totalWholesaleValue > 0 ? Math.round((projectedProfit / totalWholesaleValue) * 100) : 0;
@@ -307,9 +315,9 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
       categoryBreakdown,
       pendingBalance
     };
-  }, [orderItems, catalog, orderAdvancePayment]);
+  }, [orderItems, catalog, orderAdvancePayment, pricingMode]);
 
-  // Guardar el Pedido Hecho en el Historial con datos de cascada
+  // Guardar el Pedido Hecho en el Historial con datos de la fórmula
   const handleSavePurchaseOrder = () => {
     if (currentOrderSummary.totalPacks === 0) {
       alert('Debes agregar al menos 1 paquete de algún modelo para guardar el pedido.');
@@ -323,7 +331,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     // Armar desglose detallado de productos
     const itemsDetail = Object.entries(orderItems).map(([modelId, qty]) => {
       const item = catalog.find(m => m.id === modelId);
-      const cascadeItem = calculateCascadingPricing(item.artisanCost);
+      const cascadeItem = calculateTribunaPricing(item.artisanCost, pricingMode);
       return {
         modelId,
         code: item.code,
@@ -335,7 +343,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
         totalPieces: qty * item.piecesPerPack,
         unitArtisanCost: item.artisanCost,
         unitWholesalePrice: item.wholesalePrice,
-        cascadeBreakdown: cascadeItem,
+        pricingBreakdown: cascadeItem,
         subtotalArtisanCost: qty * item.artisanCost,
         subtotalWholesaleValue: qty * item.wholesalePrice,
         profit: (qty * item.wholesalePrice) - (qty * item.artisanCost),
@@ -355,6 +363,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
       totalPieces: currentOrderSummary.totalPieces,
       totalArtisanCost: currentOrderSummary.totalArtisanCost,
       totalWholesaleValue: currentOrderSummary.totalWholesaleValue,
+      pricingMode,
       cascadeTotals: currentOrderSummary.cascadeTotals,
       projectedProfit: currentOrderSummary.projectedProfit,
       marginPct: currentOrderSummary.marginPct,
@@ -391,7 +400,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     }
   };
 
-  // Copiar Pedido Guardado para WhatsApp con desglose en Cascada
+  // Copiar Pedido Guardado para WhatsApp con desglose de fórmula
   const handleCopyOrderWhatsApp = (order) => {
     let text = `*🎄 GRUPO TRIBUNA - PEDIDO DE ESFERAS CHIGNAHUAPAN*\n`;
     text += `*Folio:* ${order.folio} | *Fecha:* ${order.date} (${order.time})\n`;
@@ -407,9 +416,10 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
       text += `  Subtotal Costo: $${it.subtotalArtisanCost.toLocaleString()} MXN\n`;
     });
 
-    const cascade = order.cascadeTotals || calculateCascadingPricing(order.totalArtisanCost);
+    const cascade = order.cascadeTotals || calculateTribunaPricing(order.totalArtisanCost, order.pricingMode || pricingMode);
+    const modeLabel = cascade.mode === 'cascade' ? 'Cascada Compuesta (+116%)' : 'Opción 1: Suma Directa (+84%)';
 
-    text += `\n*📐 FÓRMULA DE COSTOS, TRANSPORTE Y UTILIDAD EN CASCADA (18% x 13% x 13% x 28% x 12%):*\n`;
+    text += `\n*📐 FÓRMULA DE COSTOS, TRANSPORTE Y UTILIDAD TRIBUNA (${modeLabel}):*\n`;
     text += `• Costo Base Artesanos: $${order.totalArtisanCost.toLocaleString()} MXN\n`;
     text += `• (+) Flete Castores (18%): +$${cascade.castoresAmount?.toLocaleString() || '0'} MXN\n`;
     text += `• (+) Flete Troncal Chig-Pue (13%): +$${cascade.troncalAmount?.toLocaleString() || '0'} MXN\n`;
@@ -430,7 +440,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     if (order.notes) text += `• Notas: ${order.notes}\n`;
 
     navigator.clipboard.writeText(text);
-    alert(`📋 ¡Pedido ${order.folio} copiado al portapapeles con la fórmula en cascada! Listo para enviar por WhatsApp.`);
+    alert(`📋 ¡Pedido ${order.folio} copiado al portapapeles con la fórmula de Opción 1 (+84%)! Listo para enviar por WhatsApp.`);
   };
 
   // Filtrado de modelos
@@ -691,8 +701,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                       const cost = e.target.value;
                       setFormArtisanCost(cost);
                       if (cost && Number(cost) > 0) {
-                        const cascade = calculateCascadingPricing(cost);
-                        setFormWholesalePrice(cascade.recommendedWholesalePrice);
+                        const pricing = calculateTribunaPricing(cost, pricingMode);
+                        setFormWholesalePrice(pricing.recommendedWholesalePrice);
                       } else {
                         setFormWholesalePrice('');
                       }
@@ -710,8 +720,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                       6. Precio Venta Tribuna ($):
                     </label>
                     {formArtisanCost && Number(formArtisanCost) > 0 && (
-                      <span className="text-[10px] bg-amber-100 text-amber-800 font-bold px-1.5 py-0.2 rounded">
-                        Fórmula 2.16x
+                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
+                        {pricingMode === 'direct' ? 'Opción 1 (+84% ➔ 1.84x)' : 'Opción 2 (~2.16x)'}
                       </span>
                     )}
                   </div>
@@ -721,7 +731,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                     min="1"
                     value={formWholesalePrice}
                     onChange={(e) => setFormWholesalePrice(e.target.value)}
-                    placeholder="Ej: 216.00"
+                    placeholder="Ej: 184.00"
                     className="w-full px-3.5 py-2.5 bg-amber-50/50 border border-amber-300 rounded-xl text-xs font-black text-amber-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   />
                   {formArtisanCost && formWholesalePrice && (
@@ -733,7 +743,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
 
               </div>
 
-              {/* DESGLOSE VISUAL DE LA FÓRMULA EN CASCADA TRIBUNA (18% x 13% x 13% x 28% x 12%) */}
+              {/* DESGLOSE VISUAL DE LA FÓRMULA DE COSTOS Y UTILIDAD TRIBUNA */}
               {Number(formArtisanCost) > 0 && (
                 <div className="bg-gradient-to-r from-amber-50 via-orange-50 to-amber-100/60 border border-amber-300/80 rounded-2xl p-4 space-y-3 shadow-xs">
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-amber-200/80 pb-2">
@@ -743,92 +753,132 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                       </span>
                       <div>
                         <span className="font-black text-amber-950 text-xs uppercase tracking-wide block">
-                          Fórmula Cascada: Base x 18% x 13% x 13% x 28% x 12%
+                          {pricingMode === 'direct' 
+                            ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base)' 
+                            : 'Fórmula Opción 2: Cascada Compuesta (~2.16x)'}
                         </span>
                         <span className="text-[10px] text-amber-800">
-                          Incluye transporte Castores, ruta Chignahuapan-Puebla, embalaje antishock, utilidad y acopio.
+                          {pricingMode === 'direct'
+                            ? 'Costo + 18% Castores + 13% Troncal + 13% Embalaje + 28% Tribuna + 12% Acopio ($100 ➔ $184 MXN)'
+                            : 'Costo x 1.18 x 1.13 x 1.13 x 1.28 x 1.12 ($100 ➔ $216 MXN)'}
                         </span>
                       </div>
                     </div>
+
                     <div className="flex items-center space-x-2">
-                      <span className="bg-amber-200/80 text-amber-900 text-[10px] font-black px-2 py-0.5 rounded-md">
-                        Multiplicador: ~2.16x
-                      </span>
+                      {/* Selector de Opción de Cálculo */}
+                      <div className="bg-white/90 p-0.5 rounded-xl border border-amber-300 flex text-[10px] font-bold">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPricingMode('direct');
+                            if (formArtisanCost && Number(formArtisanCost) > 0) {
+                              const p = calculateDirectSumPricing(formArtisanCost);
+                              setFormWholesalePrice(p.recommendedWholesalePrice);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-lg transition-all ${
+                            pricingMode === 'direct'
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          ⭐ Opción 1 (+84% ➔ $184)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPricingMode('cascade');
+                            if (formArtisanCost && Number(formArtisanCost) > 0) {
+                              const p = calculateCascadingPricing(formArtisanCost);
+                              setFormWholesalePrice(p.recommendedWholesalePrice);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-lg transition-all ${
+                            pricingMode === 'cascade'
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Opción 2 (Cascada $216)
+                        </button>
+                      </div>
+
                       <button
                         type="button"
-                        onClick={() => setFormWholesalePrice(formCascade.recommendedWholesalePrice)}
-                        className="bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-black px-2.5 py-1 rounded-xl text-[11px] shadow-xs flex items-center space-x-1 transition-all"
+                        onClick={() => setFormWholesalePrice(formPricing.recommendedWholesalePrice)}
+                        className="bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-black px-2.5 py-1 rounded-xl text-[11px] shadow-xs flex items-center space-x-1 transition-all"
                       >
                         <Sparkles className="w-3.5 h-3.5" />
-                        <span>Fijar ${formCascade.recommendedWholesalePrice} MXN</span>
+                        <span>Fijar ${formPricing.recommendedWholesalePrice} MXN</span>
                       </button>
                     </div>
                   </div>
 
-                  {/* Pasos de la Cascada */}
+                  {/* Pasos de la Fórmula */}
                   <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
                     <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-2xs">
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px] font-bold">
                         <span>🚚</span>
-                        <span>Castores (+18%)</span>
+                        <span>Castores (18%)</span>
                       </div>
                       <div className="font-black text-slate-900 text-sm mt-0.5">
-                        +${formCascade.castoresAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
+                        +${formPricing.castoresAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
                       </div>
                       <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
-                        Subtotal: ${formCascade.steps[0].subtotal}
+                        {pricingMode === 'direct' ? 'Sobre base de costo' : `Subtotal: $${formPricing.steps?.[0]?.subtotal || 0}`}
                       </div>
                     </div>
 
                     <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-2xs">
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px] font-bold">
                         <span>🚐</span>
-                        <span>Troncal (+13%)</span>
+                        <span>Troncal (13%)</span>
                       </div>
                       <div className="font-black text-slate-900 text-sm mt-0.5">
-                        +${formCascade.troncalAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
+                        +${formPricing.troncalAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
                       </div>
                       <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
-                        Subtotal: ${formCascade.steps[1].subtotal}
+                        {pricingMode === 'direct' ? 'Sobre base de costo' : `Subtotal: $${formPricing.steps?.[1]?.subtotal || 0}`}
                       </div>
                     </div>
 
                     <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-2xs">
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px] font-bold">
                         <span>📦</span>
-                        <span>Embalaje (+13%)</span>
+                        <span>Embalaje (13%)</span>
                       </div>
                       <div className="font-black text-slate-900 text-sm mt-0.5">
-                        +${formCascade.packagingAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
+                        +${formPricing.packagingAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
                       </div>
                       <div className="text-[9px] text-slate-500 font-semibold mt-0.5">
-                        Subtotal: ${formCascade.steps[2].subtotal}
+                        {pricingMode === 'direct' ? 'Sobre base de costo' : `Subtotal: $${formPricing.steps?.[2]?.subtotal || 0}`}
                       </div>
                     </div>
 
                     <div className="bg-emerald-50/90 p-2.5 rounded-xl border border-emerald-300 shadow-2xs">
                       <div className="flex items-center space-x-1 text-emerald-800 text-[10px] font-black">
                         <span>💎</span>
-                        <span>Utilidad Tribuna (+28%)</span>
+                        <span>Utilidad Tribuna (28%)</span>
                       </div>
                       <div className="font-black text-emerald-700 text-sm mt-0.5">
-                        +${formCascade.profitAmount} <span className="text-[10px] text-emerald-600 font-normal">MXN</span>
+                        +${formPricing.profitAmount} <span className="text-[10px] text-emerald-600 font-normal">MXN</span>
                       </div>
                       <div className="text-[9px] text-emerald-800 font-semibold mt-0.5">
-                        Subtotal: ${formCascade.steps[3].subtotal}
+                        {pricingMode === 'direct' ? 'Ganancia neta directa' : `Subtotal: $${formPricing.steps?.[3]?.subtotal || 0}`}
                       </div>
                     </div>
 
                     <div className="bg-white/90 p-2.5 rounded-xl border border-amber-200 shadow-2xs">
                       <div className="flex items-center space-x-1 text-slate-500 text-[10px] font-bold">
                         <span>🏢</span>
-                        <span>Acopio / Merma (+12%)</span>
+                        <span>Acopio / Merma (12%)</span>
                       </div>
                       <div className="font-black text-slate-900 text-sm mt-0.5">
-                        +${formCascade.handlingAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
+                        +${formPricing.handlingAmount} <span className="text-[10px] text-slate-400 font-normal">MXN</span>
                       </div>
                       <div className="text-[9px] text-amber-900 font-bold mt-0.5">
-                        Final: ${formCascade.recommendedWholesalePrice} MXN
+                        Total Final: ${formPricing.recommendedWholesalePrice} MXN
                       </div>
                     </div>
                   </div>
@@ -1234,17 +1284,39 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                     </div>
                   </div>
 
-                  {/* Desglose Operativo en Cascada del Pedido */}
+                  {/* Desglose Operativo del Pedido */}
                   {currentOrderSummary.totalArtisanCost > 0 && (
                     <div className="bg-slate-800/80 rounded-2xl p-4 border border-slate-700/80 space-y-2.5">
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-xs">
                         <span className="text-amber-400 font-bold flex items-center space-x-1.5">
                           <Calculator className="w-3.5 h-3.5" />
-                          <span>Fórmula Cascada del Pedido: Inversión x 18% x 13% x 13% x 28% x 12%</span>
+                          <span>
+                            {pricingMode === 'direct'
+                              ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base)'
+                              : 'Fórmula Opción 2: Cascada Compuesta (~2.16x)'}
+                          </span>
                         </span>
-                        <span className="text-[10px] text-slate-300 font-semibold bg-slate-700/80 px-2 py-0.5 rounded-md">
-                          Multiplicador Compuesto: ~2.16x
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <div className="bg-slate-900 p-0.5 rounded-lg border border-slate-700 flex text-[9px] font-bold">
+                            <button
+                              type="button"
+                              onClick={() => setPricingMode('direct')}
+                              className={`px-2 py-0.5 rounded ${pricingMode === 'direct' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                            >
+                              ⭐ Opción 1 (+84%)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPricingMode('cascade')}
+                              className={`px-2 py-0.5 rounded ${pricingMode === 'cascade' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                            >
+                              Opción 2 (Cascada)
+                            </button>
+                          </div>
+                          <span className="text-[10px] text-slate-300 font-semibold bg-slate-700/80 px-2 py-0.5 rounded-md">
+                            {pricingMode === 'direct' ? '1.84x Base' : '~2.16x Base'}
+                          </span>
+                        </div>
                       </div>
 
                       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 text-xs">
@@ -1432,17 +1504,24 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                     </table>
                   </div>
 
-                  {/* Desglose en Cascada Guardado */}
+                  {/* Desglose de Fórmula Guardado */}
                   {order.totalArtisanCost > 0 && (() => {
-                    const cascade = order.cascadeTotals || calculateCascadingPricing(order.totalArtisanCost);
+                    const cascade = order.cascadeTotals || calculateTribunaPricing(order.totalArtisanCost, order.pricingMode || pricingMode);
+                    const isDirect = cascade.mode !== 'cascade';
                     return (
                       <div className="bg-slate-100/70 p-3 rounded-2xl border border-slate-200 text-[11px] space-y-1.5">
                         <div className="flex items-center justify-between text-slate-700 font-bold">
                           <span className="flex items-center space-x-1">
                             <Calculator className="w-3.5 h-3.5 text-red-600" />
-                            <span>Desglose en Cascada Tribuna (18% x 13% x 13% x 28% x 12%):</span>
+                            <span>
+                              {isDirect 
+                                ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base):' 
+                                : 'Fórmula Opción 2: Cascada Compuesta (~2.16x):'}
+                            </span>
                           </span>
-                          <span className="text-[10px] text-slate-500 font-semibold">Multiplicador: ~2.16x</span>
+                          <span className="text-[10px] text-slate-500 font-semibold">
+                            {isDirect ? 'Multiplicador: 1.84x' : 'Multiplicador: ~2.16x'}
+                          </span>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[10px]">
                           <div className="bg-white p-2 rounded-xl border border-slate-200">
