@@ -460,3 +460,78 @@ export const INITIAL_SPHERES_CATALOG = [];
 // Historial de Pedidos de Compra Consolidada Guardados
 export const INITIAL_SAVED_PURCHASE_ORDERS = [];
 
+// ============================================================================
+// FÓRMULA DE COSTOS, TRANSPORTE Y UTILIDAD EN CASCADA GRUPO TRIBUNA
+// Fórmula: Costo Artesano x 18% x 13% x 13% x 28% x 12% (~2.16x multiplicador)
+// ============================================================================
+export const PRICING_CASCADING_FACTORS = [
+  { key: 'castoresFreight', label: 'Flete Nacional Castores', percent: 18, factor: 1.18, icon: '🚚', description: 'Convenio corporativo Castores salidas diarias' },
+  { key: 'troncalFreight', label: 'Flete Troncal Chignahuapan ➔ Puebla', percent: 13, factor: 1.13, icon: '🚐', description: 'Shuttle Sprinter suspensión neumática' },
+  { key: 'packagingProtection', label: 'Embalaje Especializado Antishock', percent: 13, factor: 1.13, icon: '📦', description: 'Cajas doble corrugado, burbuja y esquineros' },
+  { key: 'tribunaProfit', label: 'Utilidad Neta Grupo Tribuna', percent: 28, factor: 1.28, icon: '💎', description: 'Margen de comercialización y ganancia neta' },
+  { key: 'hubHandlingMerma', label: 'Acopio Hub Chignahuapan & Merma', percent: 12, factor: 1.12, icon: '🏢', description: 'Operación bodega, etiquetado y seguro de merma' }
+];
+
+export const TOTAL_CASCADING_MULTIPLIER = 1.18 * 1.13 * 1.13 * 1.28 * 1.12; // 2.160065...
+
+export function calculateCascadingPricing(baseCost) {
+  const cost = Number(baseCost) || 0;
+  if (cost <= 0) {
+    return {
+      baseCost: 0,
+      steps: [
+        { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: 0, subtotal: 0 },
+        { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: 0, subtotal: 0 },
+        { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: 0, subtotal: 0 },
+        { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: 0, subtotal: 0 },
+        { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: 0, subtotal: 0 }
+      ],
+      castoresAmount: 0,
+      troncalAmount: 0,
+      packagingAmount: 0,
+      profitAmount: 0,
+      handlingAmount: 0,
+      totalAdded: 0,
+      finalPrice: 0,
+      recommendedWholesalePrice: 0
+    };
+  }
+
+  const s1 = cost * 1.18;
+  const castoresAmount = s1 - cost;
+
+  const s2 = s1 * 1.13;
+  const troncalAmount = s2 - s1;
+
+  const s3 = s2 * 1.13;
+  const packagingAmount = s3 - s2;
+
+  const s4 = s3 * 1.28;
+  const profitAmount = s4 - s3;
+
+  const s5 = s4 * 1.12;
+  const handlingAmount = s5 - s4;
+
+  const finalPrice = Math.round(s5 * 100) / 100;
+  const recommendedWholesalePrice = Math.round(finalPrice);
+
+  return {
+    baseCost: cost,
+    steps: [
+      { key: 'castoresFreight', label: 'Flete Castores', percent: 18, addedAmount: Math.round(castoresAmount * 100) / 100, subtotal: Math.round(s1 * 100) / 100 },
+      { key: 'troncalFreight', label: 'Troncal Chig-Pue', percent: 13, addedAmount: Math.round(troncalAmount * 100) / 100, subtotal: Math.round(s2 * 100) / 100 },
+      { key: 'packagingProtection', label: 'Embalaje Antishock', percent: 13, addedAmount: Math.round(packagingAmount * 100) / 100, subtotal: Math.round(s3 * 100) / 100 },
+      { key: 'tribunaProfit', label: 'Utilidad Tribuna', percent: 28, addedAmount: Math.round(profitAmount * 100) / 100, subtotal: Math.round(s4 * 100) / 100 },
+      { key: 'hubHandlingMerma', label: 'Acopio & Merma', percent: 12, addedAmount: Math.round(handlingAmount * 100) / 100, subtotal: Math.round(s5 * 100) / 100 }
+    ],
+    castoresAmount: Math.round(castoresAmount * 100) / 100,
+    troncalAmount: Math.round(troncalAmount * 100) / 100,
+    packagingAmount: Math.round(packagingAmount * 100) / 100,
+    profitAmount: Math.round(profitAmount * 100) / 100,
+    handlingAmount: Math.round(handlingAmount * 100) / 100,
+    totalAdded: Math.round((s5 - cost) * 100) / 100,
+    finalPrice,
+    recommendedWholesalePrice
+  };
+}
+
