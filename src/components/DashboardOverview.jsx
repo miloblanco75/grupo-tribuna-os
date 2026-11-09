@@ -7,7 +7,7 @@ import {
   Zap, 
   Film, 
   Utensils, 
-  Car, 
+  Truck, 
   Sparkles, 
   Landmark, 
   ChevronRight,
@@ -22,7 +22,6 @@ import {
 
 export default function DashboardOverview({ 
   projects, 
-  uberData, 
   permits = [],
   amenities = [],
   pipeline = [],
@@ -301,21 +300,21 @@ export default function DashboardOverview({
         </div>
 
         <div 
-          onClick={() => setCurrentTab('uber')}
-          className="bg-white p-5 rounded-2xl border border-blue-200/80 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+          onClick={() => setCurrentTab('chignahuapan')}
+          className="bg-white p-5 rounded-2xl border border-red-200/80 shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-blue-600">Unidad Uber Mérida</span>
-            <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition-colors">
-              <Car className="w-4 h-4" />
+            <span className="text-xs font-bold uppercase tracking-wider text-red-600">Logística Chignahuapan</span>
+            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+              <Truck className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">
-            ${uberData.currentMonthRevenue.toLocaleString()} <span className="text-xs font-normal text-slate-500">MXN</span>
+            22% Dcto <span className="text-xs font-normal text-slate-500">Alianza Castores</span>
           </div>
           <p className="text-[11px] font-semibold mt-2 flex items-center space-x-1 text-slate-500">
-            <CheckCircle2 className="w-3 h-3 inline text-blue-500" />
-            <span>{uberData.currentMonthRevenue > 0 ? 'Paga renta de auto y chofer' : 'Lista para arrancar primer turno'}</span>
+            <CheckCircle2 className="w-3 h-3 inline text-red-500" />
+            <span>Tarifas preferenciales de carga consolidada</span>
           </p>
         </div>
 
@@ -345,7 +344,7 @@ export default function DashboardOverview({
             if (project.id === 'prj-electrolineras') iconBadge = '⚡';
             if (project.id === 'prj-chicxulub') iconBadge = '🧖‍♀️';
             if (project.id === 'prj-cocina') iconBadge = '🍲';
-            if (project.id === 'prj-uber') iconBadge = '🚗';
+            if (project.id === 'prj-chignahuapan') iconBadge = '🎄';
 
             return (
               <div

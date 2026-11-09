@@ -226,18 +226,6 @@ export default function Header({
           </button>
 
           <button
-            onClick={() => setCurrentTab('uber')}
-            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
-              currentTab === 'uber'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-            }`}
-          >
-            <Car className="w-3.5 h-3.5 text-blue-400" />
-            <span>Vehículo / Uber Mérida</span>
-          </button>
-
-          <button
             onClick={() => setCurrentTab('messages')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'messages'

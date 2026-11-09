@@ -226,7 +226,7 @@ export default function PayrollAndExpensesManager({
     // Nómina estimada de los colaboradores asignados a este departamento
     let projPayroll = 0;
     if (proj.id === 'prj-cocina') projPayroll = 14000; // Don Aurelio ($14k mensual)
-    if (proj.id === 'prj-uber') projPayroll = 12000; // Carlos ($12k mensual)
+    if (proj.id === 'prj-chignahuapan') projPayroll = 12000; // Carlos ($12k mensual logística)
     if (proj.id === 'prj-motul') projPayroll = 12500; // Obra y operación inicial
     if (proj.id === 'prj-chicxulub') projPayroll = 15000; // Sofia y terapeutas
     if (proj.id === 'prj-chihuahua') projPayroll = 22000; // Honorarios legales
@@ -838,7 +838,7 @@ export default function PayrollAndExpensesManager({
                   <option value="prj-cocina">🍲 Cocina Económica Mérida (Órdenes $110)</option>
                   <option value="prj-motul">🌸 Electrolinera & Gourmet Motul</option>
                   <option value="prj-chicxulub">🧖‍♀️ Spa Chicxulub Puerto</option>
-                  <option value="prj-uber">🚗 Unidad Uber Mérida</option>
+                  <option value="prj-chignahuapan">🎄 Logística & Envíos Chignahuapan</option>
                 </select>
               </div>
 

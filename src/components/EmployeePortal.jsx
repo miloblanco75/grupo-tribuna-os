@@ -236,8 +236,8 @@ export default function EmployeePortal({
     let projId = 'prj-cocina';
     let projName = 'Cocina Económica Mérida';
     if (activeEmployee.id === 'col-2') {
-      projId = 'prj-uber';
-      projName = 'Control de Unidad & Uber Mérida';
+      projId = 'prj-chignahuapan';
+      projName = 'Logística & Envíos Chignahuapan';
     } else if (activeEmployee.id === 'col-6') {
       projId = 'prj-chicxulub';
       projName = 'Spa Holístico Chicxulub Puerto';

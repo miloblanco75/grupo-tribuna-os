@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import DashboardOverview from './components/DashboardOverview';
 import ProjectsManager from './components/ProjectsManager';
-import UberFleetManager from './components/UberFleetManager';
 import EmployeePortal from './components/EmployeePortal';
 import MessagingCenter from './components/MessagingCenter';
 import OwnerReportModal from './components/OwnerReportModal';
@@ -17,7 +16,6 @@ import InstallPromptModal from './components/InstallPromptModal';
 import { 
   INITIAL_PROJECTS, 
   INITIAL_COLLABORATORS, 
-  INITIAL_UBER_DATA, 
   INITIAL_MESSAGES,
   INITIAL_PAYROLL,
   INITIAL_EXPENSES,
@@ -32,12 +30,8 @@ export default function App() {
   // Estado con persistencia en localStorage (versión 5 con Targets y Bottom Line por negocio)
   const [projects, setProjects] = useState(() => {
     const saved = localStorage.getItem('villacorp_projects_v5_targets');
-    return saved ? JSON.parse(saved) : INITIAL_PROJECTS;
-  });
-
-  const [uberData, setUberData] = useState(() => {
-    const saved = localStorage.getItem('villacorp_uber_v4_zero');
-    return saved ? JSON.parse(saved) : INITIAL_UBER_DATA;
+    const list = saved ? JSON.parse(saved) : INITIAL_PROJECTS;
+    return list.filter(p => p.id !== 'prj-uber');
   });
 
   const [messages, setMessages] = useState(() => {
@@ -86,10 +80,6 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('villacorp_projects_v5_targets', JSON.stringify(projects));
   }, [projects]);
-
-  useEffect(() => {
-    localStorage.setItem('villacorp_uber_v4_zero', JSON.stringify(uberData));
-  }, [uberData]);
 
   useEffect(() => {
     localStorage.setItem('villacorp_messages_v3', JSON.stringify(messages));
@@ -365,7 +355,6 @@ export default function App() {
         {currentTab === 'dashboard' && (
           <DashboardOverview
             projects={projects}
-            uberData={uberData}
             permits={permits}
             amenities={amenities}
             pipeline={pipeline}
@@ -438,13 +427,6 @@ export default function App() {
           />
         )}
 
-        {currentTab === 'uber' && (
-          <UberFleetManager
-            uberData={uberData}
-            setUberData={setUberData}
-          />
-        )}
-
         {currentTab === 'messages' && (
           <MessagingCenter
             messages={messages}
@@ -495,7 +477,6 @@ export default function App() {
         isOpen={isReportModalOpen}
         onClose={() => setIsReportModalOpen(false)}
         projects={projects}
-        uberData={uberData}
         salesReports={salesReports}
         expenses={expenses}
         payroll={payroll}

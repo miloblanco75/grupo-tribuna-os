@@ -27,7 +27,7 @@ export default function MessagingCenter({ messages, onSendMessage, collaborators
     'Electrolineras & Cinépolis',
     'Tierras Chihuahua',
     'Spa Chicxulub',
-    'Logística & Uber Mérida'
+    'Logística & Distribución Nacional'
   ];
 
   const filteredMessages = messages.filter(m => {

@@ -18,7 +18,6 @@ export default function OwnerReportModal({
   isOpen, 
   onClose, 
   projects, 
-  uberData,
   salesReports = [],
   expenses = [],
   payroll = [],
@@ -108,13 +107,7 @@ export default function OwnerReportModal({
       report += `• Metas: Target $${(chxPrj.targetRevenue || 160000).toLocaleString()} MXN (${chxPrj.targetUnitKPI || '130 paquetes'}) | Bottom Line: $${(chxPrj.breakEvenRevenue || 55000).toLocaleString()} MXN | Utilidad Neta: $${(chxPrj.targetNetProfit || 65000).toLocaleString()} MXN\n\n`;
     }
 
-    report += `*6. 🚗 FLOTA & UBER MÉRIDA*\n`;
-    if (uberData) {
-      report += `• Unidad activa (${uberData.carModel}). Ingresos acumulados: $${uberData.currentMonthRevenue.toLocaleString()} MXN (punto de inicio de operación).\n`;
-      report += `• Metas: Target $45,000 MXN ($1,500/día) | Bottom Line: $33,000 MXN (cubre renta auto + chofer Carlos) | Utilidad Neta: $8,500 MXN + traslados del titular garantizados.\n\n`;
-    }
-
-    report += `*7. 🇪🇺 CATÁLOGO DE EXPORTACIÓN A EUROPA (TLCUEM - Arancel 0%)*\n`;
+    report += `*6. 🇪🇺 CATÁLOGO DE EXPORTACIÓN A EUROPA (TLCUEM - Arancel 0%)*\n`;
     report += `• 71 muestras fotográficas catalogadas con fichas técnicas y códigos arancelarios para la UE (España, Alemania, Francia, Italia, Países Bajos).\n`;
     report += `• Líneas de producto: Mieles y propóleo Don Cuco (Chignahuapan), confitería fina Casa Esmeralda, cacao artesanal maya La Itzalana, salsas habaneras La Anita, dulces de coco Campeche y esferas artesanales de vidrio soplado.\n`;
     report += `• Directorio de productores directos con números telefónicos, domicilios y enlaces directos de WhatsApp para cotización de contenedores y pallets.\n\n`;
@@ -170,8 +163,8 @@ export default function OwnerReportModal({
               <div className="text-2xl font-black text-rose-600">${totalExpenses.toLocaleString()}</div>
             </div>
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Unidad Uber</span>
-              <div className="text-2xl font-black text-blue-600">Autosuficiente</div>
+              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">Castores / Envíos</span>
+              <div className="text-2xl font-black text-blue-600">22% Dcto</div>
             </div>
           </div>
 

@@ -15,11 +15,11 @@ export const INITIAL_COLLABORATORS = [
   {
     id: 'col-2',
     name: 'Carlos Medina',
-    role: 'Conductor & Operador de Unidad',
-    department: 'Logística & Uber Mérida',
+    role: 'Coordinador de Almacén & Envíos',
+    department: 'Logística & Distribución',
     pin: '2233',
     phone: '+52 999 234 5678',
-    avatar: '🚗',
+    avatar: '📦',
     baseSalaryQuincenal: 6000,
     paymentMethod: 'Transferencia Santander',
     accountNumber: '**** **** 4102'
@@ -241,36 +241,6 @@ export const INITIAL_PROJECTS = [
     documents: [
       { id: 'doc-chx-1', name: 'Folleto_Servicios_Snowbirds_Ingles_Frances.pdf', type: 'Marketing', uploadedBy: 'Sofia Loria', date: '2026-10-23', size: '3.1 MB', url: '#' }
     ]
-  },
-  {
-    id: 'prj-uber',
-    code: 'LOG-FLT',
-    name: 'Control de Unidad & Uber Mérida',
-    category: 'Logística & Autofinanciamiento',
-    location: 'Mérida Metropolitana',
-    status: 'Activo',
-    progress: 85,
-    monthlyRent: 11500, // Renta mensual del auto
-    targetRevenue: 45000, // Facturación target mensual en plataforma
-    breakEvenRevenue: 33000, // Bottom Line: Punto de equilibrio para cubrir auto y chofer
-    targetNetProfit: 8500, // Bottom Line de utilidad neta para Villacorp
-    targetMarginPct: 19,
-    targetUnitKPI: '$1,500 MXN diarios en plataforma Uber',
-    breakEvenUnitKPI: '$1,100 MXN diarios indispensables para auto y chofer',
-    budget: '$35,000 MXN / mes',
-    description: 'Esquema de vehículo rentado para asegurar movilidad propia en viajes de supervisión a Mérida y operación activa como Uber para cubrir cuota del auto y salario del chofer.',
-    lead: 'Carlos Medina',
-    tags: ['Transporte Personal', 'Turno Uber', 'Pago de Renta Auto', 'Sueldo Chofer'],
-    checklists: [
-      { id: 'chk-ub-1', text: 'Revisión mecánica periódica, frenos y cambio de aceite de la unidad', category: 'Mantenimiento', completed: true, completedAt: '2026-10-12', assignedTo: 'Carlos Medina' },
-      { id: 'chk-ub-2', text: 'Verificación de vigencia de póliza de seguro cobertura amplia con endoso Uber', category: 'Seguros', completed: true, completedAt: '2026-10-01', assignedTo: 'Carlos Medina' },
-      { id: 'chk-ub-3', text: 'Registro semanal de ganancias en plataforma Uber y corte de combustible', category: 'Finanzas', completed: false, assignedTo: 'Carlos Medina', dueDate: '2026-10-31' },
-      { id: 'chk-ub-4', text: 'Bloqueo en calendario del vehículo para próxima visita de supervisión del titular a Mérida', category: 'Agenda', completed: false, assignedTo: 'Carlos Medina', dueDate: '2026-11-07' }
-    ],
-    documents: [
-      { id: 'doc-ub-1', name: 'Poliza_Seguro_Cobertura_Amplia_Endoso_Uber.pdf', type: 'Seguro', uploadedBy: 'Carlos Medina', date: '2026-10-02', size: '1.5 MB', url: '#' },
-      { id: 'doc-ub-2', name: 'Tarjeta_Circulacion_Nissan_Versa_Yucatan.pdf', type: 'Legal', uploadedBy: 'Carlos Medina', date: '2026-09-10', size: '950 KB', url: '#' }
-    ]
   }
 ];
 
@@ -335,8 +305,8 @@ export const INITIAL_PAYROLL = [
     amount: 6000,
     status: 'Pagado',
     paymentDate: '2026-10-30',
-    receiptFile: 'Transferencia_Santander_Carlos_Uber_Oct2.pdf',
-    notes: 'Pago quincenal garantizado chofer Mérida'
+    receiptFile: 'Transferencia_Santander_Carlos_Logistica_Oct2.pdf',
+    notes: 'Pago quincenal garantizado logística y almacén'
   },
   {
     id: 'pay-3',
@@ -440,21 +410,7 @@ export const INITIAL_EXPENSES = [
   }
 ];
 
-export const INITIAL_UBER_DATA = {
-  carModel: 'Nissan Versa 2024 (Rojo Carmesí)',
-  plate: 'YZA-482-D',
-  driverName: 'Carlos Medina',
-  monthlyCarLease: 11500,
-  driverBaseSalary: 12000,
-  weeklyTarget: 7500,
-  currentMonthRevenue: 0,
-  currentMonthGas: 0,
-  currentMonthNet: 0,
-  upcomingPersonalTrips: [
-    { id: 'trip-1', startDate: '2026-11-06', endDate: '2026-11-09', purpose: 'Supervisión Obra Motul y Visita Cocina Mérida', status: 'Programado' }
-  ],
-  weeklyLogs: []
-};
+export const INITIAL_UBER_DATA = {};
 
 export const INITIAL_MESSAGES = [
   {
@@ -495,10 +451,10 @@ export const INITIAL_MESSAGES = [
   },
   {
     id: 'msg-5',
-    channel: 'Logística & Uber Mérida',
+    channel: 'Logística & Distribución Nacional',
     sender: 'Carlos Medina',
-    avatar: '🚗',
-    text: 'Unidad lavada y afinada. Pendiente de su llegada el fin de semana del 6 de noviembre, ya está bloqueado en la app.',
+    avatar: '📦',
+    text: 'Almacén listo y convenios con paqueterías al día. Envíos consolidados coordinados para la temporada.',
     timestamp: '2026-10-27 12:05',
     priority: 'Normal'
   }
