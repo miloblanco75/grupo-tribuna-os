@@ -1,14 +1,20 @@
 {
-  "name": "Grupo Tribuna OS - Logística & Envíos",
+  "name": "Grupo Tribuna OS - Gas, Electricity & Logistics On The Road",
   "short_name": "Grupo Tribuna",
-  "description": "Sistema Operativo de Logística, Envíos y Catálogo de Esferas Chignahuapan",
+  "description": "Sistema Operativo de Energía, Electromovilidad, Logística y Envíos",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#090d16",
-  "theme_color": "#dc2626",
+  "background_color": "#020617",
+  "theme_color": "#0284c7",
   "orientation": "portrait-primary",
   "icons": [
+    {
+      "src": "/gas-electricity-logo.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
     {
       "src": "/pwa-icon-192.svg",
       "sizes": "192x192",

@@ -450,24 +450,38 @@ export default function App() {
       </main>
 
       {/* Pie de Página */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center space-x-2">
-            <span className="font-extrabold text-slate-900 tracking-wider">GRUPO TRIBUNA</span>
-            <span>· Sistema Operativo de Gestión Integral & Logística</span>
+      <footer className="bg-slate-950 text-slate-400 border-t border-slate-800 text-xs relative overflow-hidden">
+        {/* Barra de Acento Tri-Color elegante */}
+        <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-amber-400 to-sky-500" />
+        
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-3">
+            <img 
+              src="/gas-electricity-logo.jpg" 
+              alt="Logo" 
+              className="w-8 h-8 rounded-lg object-contain bg-white p-0.5 border border-slate-700" 
+            />
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="font-extrabold text-white tracking-wider">GRUPO TRIBUNA</span>
+                <span className="text-[10px] font-bold text-slate-600">·</span>
+                <span className="text-[10px] font-black text-emerald-400">GAS</span>
+                <span className="text-[10px] font-black text-amber-400">ELECTRICITY</span>
+                <span className="text-[10px] font-black text-sky-400">ON THE ROAD</span>
+              </div>
+              <p className="text-[11px] text-slate-500">Sistema Operativo de Gestión Integral, Energía & Logística</p>
+            </div>
           </div>
-          <div className="flex flex-wrap items-center space-x-4 text-[11px] text-slate-400">
-            <span className="text-red-600 font-bold">🎄 Envíos Esferas Chignahuapan (Castores)</span>
-            <span>•</span>
-            <span className="text-pink-600 font-bold">🌸 Motul Rosa & Blanco</span>
-            <span>•</span>
-            <span>Cocina Mérida ($110 Rendidor)</span>
-            <span>•</span>
-            <span>Tierras Chihuahua</span>
-            <span>•</span>
-            <span>Electrolineras & Cinépolis</span>
-            <span>•</span>
-            <span className="text-indigo-600 font-bold">🇪🇺 Exportación Europa</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 text-[11px]">
+            <span className="text-emerald-400 font-semibold">🎄 Envíos Chignahuapan (Castores 22% Dcto)</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-amber-400 font-semibold">⚡ Electrolineras & Cinépolis</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-sky-400 font-semibold">🌸 Motul Rosa & Blanco</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-slate-400 font-medium">Cocina Mérida ($110)</span>
+            <span className="text-slate-600">•</span>
+            <span className="text-indigo-400 font-medium">🇪🇺 Exportación TLCUEM</span>
           </div>
         </div>
       </footer>

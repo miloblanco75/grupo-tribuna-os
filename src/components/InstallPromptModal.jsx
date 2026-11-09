@@ -96,24 +96,24 @@ export default function InstallPromptModal({ forceOpen = false, onClose }) {
           <div className="flex items-center space-x-3.5">
             <div className="relative">
               <img 
-                src="/pwa-icon-192.svg" 
+                src="/gas-electricity-logo.jpg" 
                 alt="Grupo Tribuna Ícono" 
-                className="w-14 h-14 rounded-2xl shadow-lg border border-red-500/30 object-cover"
+                className="w-14 h-14 rounded-2xl shadow-lg border border-emerald-500/30 object-contain bg-white p-1"
               />
               <span className="absolute -bottom-1 -right-1 bg-amber-400 text-slate-950 text-[9px] font-black px-1.5 py-0.2 rounded-full shadow-xs">
                 APP
               </span>
             </div>
             <div>
-              <div className="inline-flex items-center space-x-1 text-red-600 text-xs font-black uppercase tracking-wider">
+              <div className="inline-flex items-center space-x-1 text-emerald-600 text-xs font-black uppercase tracking-wider">
                 <Sparkles className="w-3.5 h-3.5" />
                 <span>Instalar en tu Celular</span>
               </div>
               <h3 className="text-lg font-black text-slate-900 leading-tight">
                 Grupo Tribuna OS
               </h3>
-              <p className="text-[11px] text-slate-500">
-                Logística, Envíos & Catálogo Chignahuapan
+              <p className="text-[11px] text-slate-500 font-semibold">
+                <span className="text-emerald-600">GAS</span> · <span className="text-amber-500">ELECTRICITY</span> · <span className="text-sky-600">ON THE ROAD</span>
               </p>
             </div>
           </div>
@@ -145,24 +145,24 @@ export default function InstallPromptModal({ forceOpen = false, onClose }) {
         {/* INSTRUCCIONES ESPECÍFICAS SEGÚN EL DISPOSITIVO */}
         {isIOS ? (
           /* Instrucciones para iPhone / iPad en Safari */
-          <div className="bg-red-50/70 border border-red-200 rounded-2xl p-4 space-y-3 text-xs">
-            <div className="font-bold text-red-950 flex items-center space-x-1.5">
-              <Smartphone className="w-4 h-4 text-red-600" />
+          <div className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-4 space-y-3 text-xs">
+            <div className="font-bold text-emerald-950 flex items-center space-x-1.5">
+              <Smartphone className="w-4 h-4 text-emerald-600" />
               <span>Cómo instalar en tu iPhone (Safari):</span>
             </div>
 
             <ol className="space-y-2.5 text-slate-700 font-medium">
               <li className="flex items-center space-x-2.5">
-                <span className="w-6 h-6 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
                   1
                 </span>
                 <span>
-                  Toca el botón <strong>Compartir</strong> en la barra inferior de Safari (el cuadrito con la flecha <Share className="w-3.5 h-3.5 inline text-blue-600 mb-0.5" />).
+                  Toca el botón <strong>Compartir</strong> en la barra inferior de Safari (el cuadrito con la flecha <Share className="w-3.5 h-3.5 inline text-sky-600 mb-0.5" />).
                 </span>
               </li>
 
               <li className="flex items-center space-x-2.5">
-                <span className="w-6 h-6 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
                   2
                 </span>
                 <span>
@@ -171,7 +171,7 @@ export default function InstallPromptModal({ forceOpen = false, onClose }) {
               </li>
 
               <li className="flex items-center space-x-2.5">
-                <span className="w-6 h-6 rounded-full bg-red-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
+                <span className="w-6 h-6 rounded-full bg-emerald-600 text-white font-black text-xs flex items-center justify-center flex-shrink-0">
                   3
                 </span>
                 <span>
@@ -186,7 +186,7 @@ export default function InstallPromptModal({ forceOpen = false, onClose }) {
             {deferredPrompt ? (
               <button
                 onClick={handleInstallClick}
-                className="w-full bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 hover:from-red-500 hover:to-amber-400 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all transform active:scale-95 text-sm flex items-center justify-center space-x-2"
+                className="w-full bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-black py-3.5 px-4 rounded-2xl shadow-xl transition-all transform active:scale-95 text-sm flex items-center justify-center space-x-2"
               >
                 <Download className="w-4 h-4" />
                 <span>Instalar Ícono en mi Celular</span>

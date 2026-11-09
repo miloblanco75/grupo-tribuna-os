@@ -45,17 +45,24 @@ export default function DashboardOverview({
     <div className="space-y-6">
       
       {/* Banner de Bienvenida y Acción Rápida */}
-      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-red-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-700/60 relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-8 w-72 h-72 bg-red-500/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 text-white rounded-2xl p-6 sm:p-8 shadow-xl border border-slate-800 relative overflow-hidden">
+        {/* Luces ambientales con los 3 colores del logo */}
+        <div className="absolute -left-10 top-0 w-60 h-60 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute right-1/3 -top-10 w-60 h-60 bg-amber-400/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute -right-10 -bottom-10 w-60 h-60 bg-sky-500/15 rounded-full blur-3xl pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-2">
-            <div className="inline-flex items-center space-x-2 bg-red-500/20 text-red-300 px-3 py-1 rounded-full text-xs font-semibold border border-red-500/30">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Consorcio Empresarial Grupo Tribuna</span>
+            <div className="inline-flex items-center space-x-2 bg-slate-900/90 px-3 py-1 rounded-full text-xs font-semibold border border-slate-700">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span className="text-emerald-400 font-bold">GAS</span>
+              <span className="text-slate-500">·</span>
+              <span className="text-amber-400 font-bold">ELECTRICITY</span>
+              <span className="text-slate-500">·</span>
+              <span className="text-sky-400 font-bold">ON THE ROAD</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Control Integral de Negocios, Logística & Proyectos
+              Control Integral de Negocios, Logística & Energía
             </h1>
             <p className="text-slate-300 text-sm max-w-2xl leading-relaxed">
               Supervisión de la <strong>División Envíos Chignahuapan (Esferas Navideñas & Castores)</strong>, la <strong>Electrolinera & Gourmet Rosa de Motul</strong>, tierras en Chihuahua, red de estaciones con Cinépolis, cocina económica de menús rendidores a $110 y catálogo de exportación a Europa.
@@ -65,19 +72,19 @@ export default function DashboardOverview({
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={() => setCurrentTab('chignahuapan')}
-              className="bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-black px-4 py-3 rounded-xl shadow-lg transition-transform active:scale-95 text-xs sm:text-sm flex items-center space-x-2"
+              className="bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black px-4 py-3 rounded-xl shadow-lg transition-transform active:scale-95 text-xs sm:text-sm flex items-center space-x-2 border border-emerald-400/30"
             >
               <span>🎄 Envíos Chignahuapan</span>
             </button>
             <button
               onClick={onOpenReportModal}
-              className="bg-amber-400 hover:bg-amber-500 text-slate-950 font-bold px-4 py-3 rounded-xl shadow-lg transition-transform active:scale-95 text-xs sm:text-sm flex items-center space-x-2"
+              className="bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-extrabold px-4 py-3 rounded-xl shadow-lg transition-transform active:scale-95 text-xs sm:text-sm flex items-center space-x-2 border border-amber-300/40"
             >
               <span>📄 Reporte</span>
             </button>
             <button
               onClick={() => setCurrentTab('pipeline')}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-4 py-3 rounded-xl text-xs sm:text-sm shadow-md transition-colors flex items-center space-x-1.5"
+              className="bg-gradient-to-r from-sky-600 to-blue-700 hover:from-sky-500 hover:to-blue-600 text-white font-bold px-4 py-3 rounded-xl text-xs sm:text-sm shadow-md transition-colors flex items-center space-x-1.5 border border-sky-400/30"
             >
               <span>🚀 Pipeline</span>
             </button>
@@ -88,7 +95,7 @@ export default function DashboardOverview({
       {/* TARJETA DESTACADA: DIVISIÓN ENVÍOS CHIGNAHUAPAN & ALIANZA CASTORES */}
       <div 
         onClick={() => setCurrentTab('chignahuapan')}
-        className="bg-gradient-to-r from-red-950 via-slate-900 to-amber-950 rounded-2xl p-6 text-white shadow-xl shadow-red-950/30 cursor-pointer hover:scale-[1.01] transition-transform relative overflow-hidden group border border-red-800/40"
+        className="bg-gradient-to-r from-emerald-950 via-slate-900 to-slate-950 rounded-2xl p-6 text-white shadow-xl shadow-emerald-950/30 cursor-pointer hover:scale-[1.01] transition-transform relative overflow-hidden group border border-emerald-800/40"
       >
         <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-10 text-9xl font-black pointer-events-none">
           📦
@@ -97,7 +104,7 @@ export default function DashboardOverview({
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5 max-w-2xl">
             <div className="flex items-center space-x-2">
-              <span className="bg-red-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-emerald-600 text-white text-xs font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 🎄 NUEVA DIVISIÓN · CHIGNAHUAPAN, PUEBLA
               </span>
               <span className="bg-amber-400 text-slate-950 text-xs font-black px-2.5 py-0.5 rounded-full">
@@ -275,11 +282,11 @@ export default function DashboardOverview({
 
         <div 
           onClick={() => setCurrentTab('permits')}
-          className="bg-white p-5 rounded-2xl border border-purple-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-amber-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-purple-800">Semáforo Permisos</span>
-            <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center group-hover:bg-purple-600 group-hover:text-white transition-colors">
+            <span className="text-xs font-bold uppercase tracking-wider text-amber-800">Semáforo Permisos (CFE / CRE)</span>
+            <div className="w-8 h-8 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center group-hover:bg-amber-500 group-hover:text-slate-950 transition-colors">
               <Landmark className="w-4 h-4" />
             </div>
           </div>
@@ -301,19 +308,19 @@ export default function DashboardOverview({
 
         <div 
           onClick={() => setCurrentTab('chignahuapan')}
-          className="bg-white p-5 rounded-2xl border border-red-200/80 shadow-sm hover:shadow-md transition-all cursor-pointer group"
+          className="bg-white p-5 rounded-2xl border border-sky-200/90 shadow-sm hover:shadow-md transition-all cursor-pointer group"
         >
           <div className="flex items-center justify-between text-slate-500 mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-red-600">Logística Chignahuapan</span>
-            <div className="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center group-hover:bg-red-600 group-hover:text-white transition-colors">
+            <span className="text-xs font-bold uppercase tracking-wider text-sky-700">Logística & Envíos (On Road)</span>
+            <div className="w-8 h-8 rounded-lg bg-sky-50 text-sky-600 flex items-center justify-center group-hover:bg-sky-600 group-hover:text-white transition-colors">
               <Truck className="w-4 h-4" />
             </div>
           </div>
           <div className="text-2xl font-extrabold text-slate-900">
             22% Dcto <span className="text-xs font-normal text-slate-500">Alianza Castores</span>
           </div>
-          <p className="text-[11px] font-semibold mt-2 flex items-center space-x-1 text-slate-500">
-            <CheckCircle2 className="w-3 h-3 inline text-red-500" />
+          <p className="text-[11px] font-semibold mt-2 flex items-center space-x-1 text-slate-600">
+            <CheckCircle2 className="w-3 h-3 inline text-sky-500" />
             <span>Tarifas preferenciales de carga consolidada</span>
           </p>
         </div>

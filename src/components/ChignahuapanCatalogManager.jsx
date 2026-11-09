@@ -458,15 +458,15 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     <div className="space-y-6">
       
       {/* ENCABEZADO PRINCIPAL DE CATALOGACIÓN Y PEDIDOS */}
-      <div className="bg-gradient-to-r from-slate-900 via-red-950 to-amber-950 text-white rounded-3xl p-5 sm:p-7 shadow-xl border border-red-900/40 relative overflow-hidden">
+      <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white rounded-3xl p-5 sm:p-7 shadow-xl border border-emerald-900/40 relative overflow-hidden">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center space-x-2">
-              <span className="bg-red-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+              <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
                 🎄 Chignahuapan, Puebla
               </span>
               <span className="text-xs text-amber-300 font-bold">
-                Grupo Tribuna Logística
+                Grupo Tribuna Logística & Energía
               </span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight">
@@ -498,7 +498,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
           onClick={() => setActiveCatalogTab('create')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeCatalogTab === 'create'
-              ? 'bg-red-600 text-white shadow-md shadow-red-900/20'
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-900/30'
               : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
           }`}
         >
@@ -510,14 +510,14 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
           onClick={() => setActiveCatalogTab('order')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeCatalogTab === 'order'
-              ? 'bg-amber-500 text-slate-950 shadow-md shadow-amber-900/20'
+              ? 'bg-amber-400 text-slate-950 font-black shadow-md shadow-amber-900/20'
               : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
           }`}
         >
           <ShoppingCart className="w-4 h-4" />
           <span>2. Hacer Pedido</span>
           {currentOrderSummary.totalPacks > 0 && (
-            <span className="bg-red-600 text-white text-[10px] font-black px-2 py-0.2 rounded-full">
+            <span className="bg-emerald-600 text-white text-[10px] font-black px-2 py-0.2 rounded-full">
               {currentOrderSummary.totalPacks} pks
             </span>
           )}
@@ -527,7 +527,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
           onClick={() => setActiveCatalogTab('history')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeCatalogTab === 'history'
-              ? 'bg-slate-900 text-white shadow-md'
+              ? 'bg-sky-600 text-white shadow-md shadow-sky-900/30'
               : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
           }`}
         >

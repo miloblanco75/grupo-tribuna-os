@@ -424,14 +424,14 @@ export default function ChignahuapanLogisticsManager() {
     <div className="space-y-6">
       
       {/* BANNER PRINCIPAL DE LA DIVISIÓN */}
-      <div className="bg-gradient-to-r from-red-950 via-slate-900 to-amber-950 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-red-900/40 relative overflow-hidden">
-        <div className="absolute right-0 top-0 translate-x-12 -translate-y-8 w-96 h-96 bg-red-600/10 rounded-full blur-3xl pointer-events-none" />
+      <div className="bg-gradient-to-r from-slate-950 via-emerald-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-2xl border border-emerald-900/40 relative overflow-hidden">
+        <div className="absolute right-0 top-0 translate-x-12 -translate-y-8 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute left-1/3 bottom-0 w-80 h-40 bg-amber-500/10 rounded-full blur-2xl pointer-events-none" />
 
         <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
           <div className="space-y-3 max-w-3xl">
             <div className="flex flex-wrap items-center gap-2">
-              <span className="bg-gradient-to-r from-red-600 to-rose-500 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md flex items-center space-x-1.5">
+              <span className="bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-xs px-3 py-1 rounded-full shadow-md flex items-center space-x-1.5 border border-emerald-400/30">
                 <span>🎄</span>
                 <span>GRUPO TRIBUNA LOGÍSTICA</span>
               </span>
@@ -439,7 +439,7 @@ export default function ChignahuapanLogisticsManager() {
                 <span>📦</span>
                 <span>División Envíos Chignahuapan</span>
               </span>
-              <span className="bg-slate-800 text-slate-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-slate-700">
+              <span className="bg-sky-950/80 text-sky-300 text-xs font-semibold px-2.5 py-1 rounded-full border border-sky-700/50">
                 Alianza Oficial Castores ({CASTORES_ALLIANCE_INFO.discountPercentage}% Descuento)
               </span>
             </div>
@@ -592,8 +592,8 @@ export default function ChignahuapanLogisticsManager() {
           onClick={() => setActiveTab('catalog')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeTab === 'catalog'
-              ? 'bg-gradient-to-r from-red-600 via-rose-600 to-amber-500 text-white shadow-md shadow-red-900/30'
-              : 'bg-red-50 hover:bg-red-100 text-red-800 border border-red-300 font-bold'
+              ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 text-white shadow-md shadow-emerald-900/30'
+              : 'bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold'
           }`}
         >
           <Camera className="w-4 h-4 text-amber-300" />
@@ -607,7 +607,7 @@ export default function ChignahuapanLogisticsManager() {
           onClick={() => setActiveTab('orders')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeTab === 'orders'
-              ? 'bg-red-600 text-white shadow-md shadow-red-900/20'
+              ? 'bg-sky-600 text-white shadow-md shadow-sky-900/20'
               : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
           }`}
         >

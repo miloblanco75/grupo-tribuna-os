@@ -24,24 +24,36 @@ export default function Header({
   onOpenInstallModal
 }) {
   return (
-    <header className="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-lg">
+    <header className="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-30 shadow-xl">
+      {/* Barra de Acento con los 3 colores del Logo (Gas Verde, Electricity Dorado, On The Road Azul) */}
+      <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-amber-400 to-sky-500 shadow-sm shadow-emerald-500/20" />
+      
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           
           {/* Brand Logo & Name */}
-          <div className="flex items-center space-x-3 cursor-pointer" onClick={() => setCurrentTab('dashboard')}>
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-tr from-red-600 via-rose-500 to-amber-500 flex items-center justify-center shadow-md shadow-red-900/40 font-black text-xl tracking-wider text-white">
-              GT
+          <div className="flex items-center space-x-3 cursor-pointer group" onClick={() => setCurrentTab('dashboard')}>
+            <div className="relative">
+              <img 
+                src="/gas-electricity-logo.jpg" 
+                alt="Gas Electricity On The Road" 
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-xl object-contain bg-white p-0.5 shadow-md shadow-emerald-950/40 border border-emerald-400/30 group-hover:border-emerald-400 transition-colors"
+              />
+              <span className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-slate-950 rounded-full"></span>
             </div>
             <div>
               <div className="flex items-center space-x-2">
                 <span className="text-xl sm:text-2xl font-black tracking-tight text-white">GRUPO TRIBUNA</span>
-                <span className="text-xs bg-red-500/20 text-red-300 font-semibold px-2 py-0.5 rounded-full border border-red-500/30">
-                  Logística & Business OS
+                <span className="hidden sm:inline-flex items-center space-x-1.5 text-[10px] font-black tracking-wider px-2 py-0.5 rounded-full bg-slate-900 border border-slate-700">
+                  <span className="text-emerald-400">GAS</span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-amber-400">ELECTRICITY</span>
+                  <span className="text-slate-600">·</span>
+                  <span className="text-sky-400">ON THE ROAD</span>
                 </span>
               </div>
               <p className="text-[11px] text-slate-400 font-medium hidden sm:block">
-                Envíos Esferas Chignahuapan (Castores) · Electrolineras · Motul Rosa & Blanco · Inversiones
+                Electromovilidad & Energía Sustentable · Logística Chignahuapan · Alianza Castores · Inversiones
               </p>
             </div>
           </div>
@@ -52,7 +64,7 @@ export default function Header({
             {/* Install PWA App Button */}
             <button
               onClick={onOpenInstallModal}
-              className="flex items-center space-x-1.5 bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-500 hover:to-rose-500 text-white font-bold px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-xs sm:text-sm border border-red-400/40 animate-pulse"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-emerald-600 via-teal-600 to-sky-600 hover:from-emerald-500 hover:to-sky-500 text-white font-bold px-3 py-2 sm:px-3.5 sm:py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-xs sm:text-sm border border-emerald-400/40"
               title="Instalar ícono en pantalla de inicio de tu celular"
             >
               <span>📲</span>
@@ -70,27 +82,27 @@ export default function Header({
               <span>Motul Rosa & Blanco</span>
             </button>
 
-            {/* Quick Report Button */}
+            {/* Quick Report Button (Electricity Gold) */}
             <button
               onClick={onOpenReportModal}
-              className="flex items-center space-x-2 bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-slate-950 font-bold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl shadow-md transition-all transform active:scale-95 text-xs sm:text-sm"
+              className="flex items-center space-x-1.5 bg-gradient-to-r from-amber-400 via-amber-500 to-yellow-400 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-extrabold px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl shadow-md transition-all transform active:scale-95 text-xs sm:text-sm border border-amber-300/60"
               title="Generar reporte ejecutivo de avances"
             >
-              <FileText className="w-4 h-4" />
+              <FileText className="w-4 h-4 text-slate-950" />
               <span>Reporte</span>
             </button>
 
             {/* Employee Portal Switch */}
             {activeEmployee ? (
-              <div className="flex items-center bg-slate-800 border border-slate-700 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2">
+              <div className="flex items-center bg-slate-900 border border-slate-700 rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2">
                 <span className="text-base mr-2">{activeEmployee.avatar}</span>
                 <div className="text-left mr-2 hidden sm:block">
                   <div className="text-xs font-bold text-white leading-tight">{activeEmployee.name}</div>
-                  <div className="text-[10px] text-emerald-400">{activeEmployee.role}</div>
+                  <div className="text-[10px] text-emerald-400 font-semibold">{activeEmployee.role}</div>
                 </div>
                 <button
                   onClick={() => setActiveEmployee(null)}
-                  className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-slate-700/60 rounded-lg transition-colors"
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg transition-colors"
                   title="Cerrar sesión de colaborador"
                 >
                   <LogOut className="w-4 h-4" />
@@ -101,11 +113,11 @@ export default function Header({
                 onClick={() => setCurrentTab('portal')}
                 className={`flex items-center space-x-1.5 sm:space-x-2 px-3 py-2 sm:px-4 sm:py-2.5 rounded-xl font-semibold text-xs sm:text-sm transition-all border ${
                   currentTab === 'portal'
-                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-md shadow-emerald-900/40'
-                    : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700'
+                    ? 'bg-sky-600 text-white border-sky-400 shadow-md shadow-sky-900/40'
+                    : 'bg-slate-900 hover:bg-slate-800 text-slate-200 border-slate-700'
                 }`}
               >
-                <UserCheck className="w-4 h-4 text-emerald-400" />
+                <UserCheck className="w-4 h-4 text-sky-400" />
                 <span className="hidden sm:inline">Portal Colaborador (PIN)</span>
                 <span className="sm:hidden">Entrar PIN</span>
               </button>
@@ -119,8 +131,8 @@ export default function Header({
             onClick={() => setCurrentTab('dashboard')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'dashboard'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40 shadow-sm'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <span>📊 Dashboard General</span>
@@ -130,8 +142,8 @@ export default function Header({
             onClick={() => setCurrentTab('chignahuapan')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all flex items-center space-x-1.5 ${
               currentTab === 'chignahuapan'
-                ? 'bg-gradient-to-r from-red-600 to-rose-600 text-white font-black shadow-md shadow-red-900/40 border border-red-500'
-                : 'bg-red-950/40 text-amber-300 hover:text-white hover:bg-red-900/40 border border-red-800/40 font-bold'
+                ? 'bg-gradient-to-r from-emerald-700 to-teal-800 text-white font-black shadow-md border border-emerald-500'
+                : 'bg-emerald-950/40 text-amber-300 hover:text-white hover:bg-emerald-900/40 border border-emerald-800/40 font-bold'
             }`}
           >
             <span>🎄 Envíos Chignahuapan</span>
@@ -174,13 +186,13 @@ export default function Header({
             onClick={() => setCurrentTab('pipeline')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'pipeline'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <span>🚀 Pipeline Expansión</span>
-            <span className="bg-blue-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
-              Nacional
+            <span className="bg-sky-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+              On Road
             </span>
           </button>
 
@@ -188,8 +200,8 @@ export default function Header({
             onClick={() => setCurrentTab('permits')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'permits'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <ShieldCheck className="w-3.5 h-3.5 text-amber-400" />
@@ -203,12 +215,12 @@ export default function Header({
             onClick={() => setCurrentTab('amenities')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'amenities'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <span>🏪 Amenidades & Cinépolis</span>
-            <span className="bg-purple-500 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+            <span className="bg-amber-400 text-slate-950 text-[10px] font-black px-1.5 py-0.2 rounded-full">
               Rentas
             </span>
           </button>
@@ -217,8 +229,8 @@ export default function Header({
             onClick={() => setCurrentTab('payroll')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'payroll'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
             <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
@@ -229,11 +241,11 @@ export default function Header({
             onClick={() => setCurrentTab('messages')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'messages'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <MessageSquare className="w-3.5 h-3.5 text-amber-400" />
+            <MessageSquare className="w-3.5 h-3.5 text-sky-400" />
             <span>Mensajes & Avisos</span>
           </button>
 
@@ -241,11 +253,11 @@ export default function Header({
             onClick={() => setCurrentTab('portal')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'portal'
-                ? 'bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30'
-                : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+                ? 'bg-sky-500/20 text-sky-300 font-bold border border-sky-500/40'
+                : 'text-slate-400 hover:text-white hover:bg-slate-900'
             }`}
           >
-            <UserCheck className="w-3.5 h-3.5 text-purple-400" />
+            <UserCheck className="w-3.5 h-3.5 text-sky-400" />
             <span>Asignaciones con PIN</span>
           </button>
         </div>
