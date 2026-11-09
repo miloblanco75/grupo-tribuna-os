@@ -605,12 +605,12 @@ export function calculateCascadingPricing(baseCost) {
   };
 }
 
-// Función maestra: por defecto utiliza OPCIÓN 1 (Suma Directa +84%)
-export function calculateTribunaPricing(baseCost, mode = 'direct') {
-  if (mode === 'cascade') {
-    return calculateCascadingPricing(baseCost);
+// Función maestra: por defecto utiliza FÓRMULA OFICIAL EN CASCADA (100 -> 216)
+export function calculateTribunaPricing(baseCost, mode = 'cascade') {
+  if (mode === 'direct') {
+    return calculateDirectSumPricing(baseCost);
   }
-  return calculateDirectSumPricing(baseCost);
+  return calculateCascadingPricing(baseCost);
 }
 
 // Alias para compatibilidad hacia atrás

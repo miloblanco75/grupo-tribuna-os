@@ -84,8 +84,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
   const [formPhotoUrl, setFormPhotoUrl] = useState('');
   const [editingModelId, setEditingModelId] = useState(null);
 
-  // Modo de cálculo de fórmula: 'direct' (Opción 1: Suma Directa +84% ➔ $184) | 'cascade' (Opción 2: Cascada +116% ➔ $216)
-  const [pricingMode, setPricingMode] = useState('direct');
+  // Modo de cálculo de fórmula: 'cascade' (Fórmula Oficial en Cascada ➔ $216) | 'direct' (Suma Directa ➔ $184)
+  const [pricingMode, setPricingMode] = useState('cascade');
 
   const fileInputRef = useRef(null);
   const [searchFilter, setSearchFilter] = useState('');
@@ -720,8 +720,8 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                       6. Precio Venta Tribuna ($):
                     </label>
                     {formArtisanCost && Number(formArtisanCost) > 0 && (
-                      <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-1.5 py-0.2 rounded">
-                        {pricingMode === 'direct' ? 'Opción 1 (+84% ➔ 1.84x)' : 'Opción 2 (~2.16x)'}
+                      <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-1.5 py-0.2 rounded">
+                        {pricingMode === 'cascade' ? '⭐ Fórmula Cascada (~2.16x)' : 'Suma Directa (1.84x)'}
                       </span>
                     )}
                   </div>
@@ -731,7 +731,7 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                     min="1"
                     value={formWholesalePrice}
                     onChange={(e) => setFormWholesalePrice(e.target.value)}
-                    placeholder="Ej: 184.00"
+                    placeholder="Ej: 216.00"
                     className="w-full px-3.5 py-2.5 bg-amber-50/50 border border-amber-300 rounded-xl text-xs font-black text-amber-900 focus:ring-2 focus:ring-amber-500 focus:outline-none"
                   />
                   {formArtisanCost && formWholesalePrice && (
@@ -753,14 +753,14 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                       </span>
                       <div>
                         <span className="font-black text-amber-950 text-xs uppercase tracking-wide block">
-                          {pricingMode === 'direct' 
-                            ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base)' 
-                            : 'Fórmula Opción 2: Cascada Compuesta (~2.16x)'}
+                          {pricingMode === 'cascade' 
+                            ? '⭐ Fórmula Oficial en Cascada: Base x 18% x 13% x 13% x 28% x 12%' 
+                            : 'Fórmula Alternativa: Suma Directa (+84% sobre costo base)'}
                         </span>
                         <span className="text-[10px] text-amber-800">
-                          {pricingMode === 'direct'
-                            ? 'Costo + 18% Castores + 13% Troncal + 13% Embalaje + 28% Tribuna + 12% Acopio ($100 ➔ $184 MXN)'
-                            : 'Costo x 1.18 x 1.13 x 1.13 x 1.28 x 1.12 ($100 ➔ $216 MXN)'}
+                          {pricingMode === 'cascade'
+                            ? 'Costo x 1.18 x 1.13 x 1.13 x 1.28 x 1.12 ($100 ➔ $216 MXN) — incluye Castores, troncal, embalaje, utilidad y acopio'
+                            : 'Costo + 18% + 13% + 13% + 28% + 12% ($100 ➔ $184 MXN)'}
                         </span>
                       </div>
                     </div>
@@ -768,23 +768,6 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                     <div className="flex items-center space-x-2">
                       {/* Selector de Opción de Cálculo */}
                       <div className="bg-white/90 p-0.5 rounded-xl border border-amber-300 flex text-[10px] font-bold">
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setPricingMode('direct');
-                            if (formArtisanCost && Number(formArtisanCost) > 0) {
-                              const p = calculateDirectSumPricing(formArtisanCost);
-                              setFormWholesalePrice(p.recommendedWholesalePrice);
-                            }
-                          }}
-                          className={`px-2.5 py-1 rounded-lg transition-all ${
-                            pricingMode === 'direct'
-                              ? 'bg-amber-600 text-white shadow-xs'
-                              : 'text-slate-600 hover:text-slate-900'
-                          }`}
-                        >
-                          ⭐ Opción 1 (+84% ➔ $184)
-                        </button>
                         <button
                           type="button"
                           onClick={() => {
@@ -800,7 +783,24 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                               : 'text-slate-600 hover:text-slate-900'
                           }`}
                         >
-                          Opción 2 (Cascada $216)
+                          ⭐ Cascada Oficial ($216)
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setPricingMode('direct');
+                            if (formArtisanCost && Number(formArtisanCost) > 0) {
+                              const p = calculateDirectSumPricing(formArtisanCost);
+                              setFormWholesalePrice(p.recommendedWholesalePrice);
+                            }
+                          }}
+                          className={`px-2.5 py-1 rounded-lg transition-all ${
+                            pricingMode === 'direct'
+                              ? 'bg-amber-600 text-white shadow-xs'
+                              : 'text-slate-600 hover:text-slate-900'
+                          }`}
+                        >
+                          Suma Directa ($184)
                         </button>
                       </div>
 
@@ -1291,30 +1291,30 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                         <span className="text-amber-400 font-bold flex items-center space-x-1.5">
                           <Calculator className="w-3.5 h-3.5" />
                           <span>
-                            {pricingMode === 'direct'
-                              ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base)'
-                              : 'Fórmula Opción 2: Cascada Compuesta (~2.16x)'}
+                            {pricingMode === 'cascade'
+                              ? '⭐ Fórmula Oficial en Cascada: Inversión x 18% x 13% x 13% x 28% x 12%'
+                              : 'Fórmula Alternativa: Suma Directa (+84% sobre costo base)'}
                           </span>
                         </span>
                         <div className="flex items-center space-x-2">
                           <div className="bg-slate-900 p-0.5 rounded-lg border border-slate-700 flex text-[9px] font-bold">
                             <button
                               type="button"
-                              onClick={() => setPricingMode('direct')}
-                              className={`px-2 py-0.5 rounded ${pricingMode === 'direct' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
-                            >
-                              ⭐ Opción 1 (+84%)
-                            </button>
-                            <button
-                              type="button"
                               onClick={() => setPricingMode('cascade')}
                               className={`px-2 py-0.5 rounded ${pricingMode === 'cascade' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
                             >
-                              Opción 2 (Cascada)
+                              ⭐ Cascada ($216)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setPricingMode('direct')}
+                              className={`px-2 py-0.5 rounded ${pricingMode === 'direct' ? 'bg-amber-500 text-slate-950 font-black' : 'text-slate-400'}`}
+                            >
+                              Suma Directa ($184)
                             </button>
                           </div>
                           <span className="text-[10px] text-slate-300 font-semibold bg-slate-700/80 px-2 py-0.5 rounded-md">
-                            {pricingMode === 'direct' ? '1.84x Base' : '~2.16x Base'}
+                            {pricingMode === 'cascade' ? '~2.16x Base' : '1.84x Base'}
                           </span>
                         </div>
                       </div>
@@ -1514,13 +1514,13 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                           <span className="flex items-center space-x-1">
                             <Calculator className="w-3.5 h-3.5 text-red-600" />
                             <span>
-                              {isDirect 
-                                ? 'Fórmula Opción 1: Suma Directa (+84% sobre costo base):' 
-                                : 'Fórmula Opción 2: Cascada Compuesta (~2.16x):'}
+                              {!isDirect 
+                                ? '⭐ Fórmula Oficial en Cascada (~2.16x):' 
+                                : 'Fórmula Suma Directa (1.84x):'}
                             </span>
                           </span>
                           <span className="text-[10px] text-slate-500 font-semibold">
-                            {isDirect ? 'Multiplicador: 1.84x' : 'Multiplicador: ~2.16x'}
+                            {!isDirect ? 'Multiplicador: ~2.16x' : 'Multiplicador: 1.84x'}
                           </span>
                         </div>
                         <div className="grid grid-cols-2 sm:grid-cols-5 gap-1.5 text-[10px]">
