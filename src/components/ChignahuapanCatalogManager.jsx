@@ -28,13 +28,17 @@ import {
   Calculator,
   TrendingUp,
   Truck,
-  ShieldCheck
+  ShieldCheck,
+  Eye,
+  RotateCcw,
+  Filter
 } from 'lucide-react';
 
 import {
   SPHERE_NUMBERS,
   SPHERE_TYPES,
   INITIAL_ARTISANS,
+  INITIAL_SPHERES_CATALOG,
   calculateDirectSumPricing,
   calculateCascadingPricing,
   calculateTribunaPricing,
@@ -47,11 +51,25 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
   // Pestaña activa dentro del área de catálogo: 'create' | 'order' | 'history'
   const [activeCatalogTab, setActiveCatalogTab] = useState('create');
 
-  // Catálogo de modelos creados por el usuario (empezamos limpio)
+  // Catálogo de modelos creados por el usuario (inicializa con las 90 fotos de Chignahuapan)
   const [catalog, setCatalog] = useState(() => {
     const saved = localStorage.getItem('tribuna_spheres_catalog_v2_custom');
-    return saved ? JSON.parse(saved) : [];
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      } catch (e) {
+        console.error('Error reading saved catalog:', e);
+      }
+    }
+    return INITIAL_SPHERES_CATALOG;
   });
+
+  // Filtro de estado de precio: 'all' | 'priced' | 'pending'
+  const [priceFilter, setPriceFilter] = useState('all');
+
+  // Modal para ver foto en tamaño completo
+  const [previewModalProduct, setPreviewModalProduct] = useState(null);
 
   // Historial de Pedidos Guardados por el usuario
   const [savedOrders, setSavedOrders] = useState(() => {
@@ -243,6 +261,32 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
         delete next[modelId];
         return next;
       });
+    }
+  };
+
+  // Actualizar precio de compra / costo de taller directamente en la tarjeta del catálogo
+  const handleInlinePriceUpdate = (modelId, newCostValue) => {
+    const cost = parseFloat(newCostValue);
+    const validCost = isNaN(cost) || cost < 0 ? 0 : cost;
+    setCatalog(prev => prev.map(m => {
+      if (m.id !== modelId) return m;
+      const pricing = calculateTribunaPricing(validCost, pricingMode);
+      return {
+        ...m,
+        artisanCost: validCost,
+        wholesalePrice: pricing.recommendedWholesalePrice,
+        hasPriceTag: validCost > 0,
+        tagText: validCost > 0 ? (m.tagText || `$${validCost} MXN`) : ''
+      };
+    }));
+  };
+
+  // Restaurar los 90 modelos originales extraídos de las fotos
+  const handleResetToDefaultPhotos = () => {
+    if (confirm('¿Deseas restaurar el catálogo completo de 90 productos fotografiados en los talleres de Chignahuapan?')) {
+      setCatalog(INITIAL_SPHERES_CATALOG);
+      localStorage.setItem('tribuna_spheres_catalog_v2_custom', JSON.stringify(INITIAL_SPHERES_CATALOG));
+      alert('✅ ¡Catálogo de 90 modelos de Chignahuapan restaurado exitosamente!');
     }
   };
 
@@ -443,15 +487,35 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
     alert(`📋 ¡Pedido ${order.folio} copiado al portapapeles con la fórmula de Opción 1 (+84%)! Listo para enviar por WhatsApp.`);
   };
 
-  // Filtrado de modelos
+  // Métricas del catálogo
+  const catalogStats = useMemo(() => {
+    const total = catalog.length;
+    const priced = catalog.filter(m => m.artisanCost > 0).length;
+    const pending = total - priced;
+    const totalPieces = catalog.reduce((acc, m) => acc + (m.piecesPerPack || 0), 0);
+    return { total, priced, pending, totalPieces };
+  }, [catalog]);
+
+  // Filtrado de modelos por búsqueda y por estado de precio
   const filteredCatalog = catalog.filter(m => {
     const q = searchFilter.toLowerCase();
-    return (
+    const matchesSearch = (
       m.name.toLowerCase().includes(q) ||
       m.size.toLowerCase().includes(q) ||
       m.typeName.toLowerCase().includes(q) ||
-      m.artisanProvider.toLowerCase().includes(q)
+      m.artisanProvider.toLowerCase().includes(q) ||
+      (m.notes && m.notes.toLowerCase().includes(q))
     );
+
+    if (!matchesSearch) return false;
+
+    if (priceFilter === 'priced') {
+      return m.artisanCost > 0;
+    }
+    if (priceFilter === 'pending') {
+      return !m.artisanCost || m.artisanCost === 0;
+    }
+    return true;
   });
 
   return (
@@ -946,127 +1010,304 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
 
           </div>
 
-          {/* LISTA DE MODELOS YA CREADOS */}
-          <div className="space-y-4">
+          {/* LISTA DE MODELOS YA CREADOS Y FOTOGRAFIADOS */}
+          <div className="space-y-5">
             
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-              <div>
-                <h3 className="text-base font-black text-slate-900">
-                  Modelos Creados en Catálogo ({catalog.length})
-                </h3>
-                <p className="text-xs text-slate-500">
-                  Modelos listos para agregar a tus pedidos de compra consolidada.
-                </p>
+            {/* Barra de Filtros, Búsqueda y Estadísticas de Precios */}
+            <div className="bg-white rounded-3xl p-5 border border-slate-200 shadow-sm space-y-4">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                      Catálogo Fotográfico de Chignahuapan
+                    </span>
+                    <span className="text-xs text-slate-500 font-bold">
+                      {catalogStats.totalPieces.toLocaleString()} piezas catalogadas
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-black text-slate-900 mt-1">
+                    Inventario de Modelos ({filteredCatalog.length} de {catalogStats.total})
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Edita el costo de compra directamente en cualquier tarjeta para calcular el precio de venta mayorista (+84%).
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <div className="relative w-full sm:w-64">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <input
+                      type="text"
+                      value={searchFilter}
+                      onChange={(e) => setSearchFilter(e.target.value)}
+                      placeholder="Buscar modelo, acabado, taller..."
+                      className="w-full pl-9 pr-3 py-2 bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                    />
+                  </div>
+
+                  <button
+                    onClick={handleResetToDefaultPhotos}
+                    className="p-2 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 rounded-xl transition-all flex items-center space-x-1.5 text-xs font-bold"
+                    title="Restaurar los 90 modelos fotografiados de Chignahuapan"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Restaurar 90 Fotos</span>
+                  </button>
+                </div>
               </div>
 
-              {catalog.length > 0 && (
-                <div className="relative w-full sm:w-64">
-                  <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
-                  <input
-                    type="text"
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                    placeholder="Buscar modelo o tamaño..."
-                    className="w-full pl-9 pr-3 py-1.5 bg-white border border-slate-300 rounded-xl text-xs focus:outline-none"
-                  />
-                </div>
-              )}
+              {/* Botones de Filtro Rápido por Estado de Precio */}
+              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-slate-100">
+                <span className="text-xs font-bold text-slate-400 flex items-center space-x-1 mr-1">
+                  <Filter className="w-3 h-3" />
+                  <span>Filtrar:</span>
+                </span>
+
+                <button
+                  onClick={() => setPriceFilter('all')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all ${
+                    priceFilter === 'all'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  Todos ({catalogStats.total})
+                </button>
+
+                <button
+                  onClick={() => setPriceFilter('priced')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center space-x-1.5 ${
+                    priceFilter === 'priced'
+                      ? 'bg-emerald-600 text-white shadow-sm'
+                      : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200/60'
+                  }`}
+                >
+                  <span>🏷️ Con Precio de Taller</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-white/30">{catalogStats.priced}</span>
+                </button>
+
+                <button
+                  onClick={() => setPriceFilter('pending')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-black transition-all flex items-center space-x-1.5 ${
+                    priceFilter === 'pending'
+                      ? 'bg-amber-500 text-slate-950 shadow-sm'
+                      : 'bg-amber-50 text-amber-900 hover:bg-amber-100 border border-amber-200/60'
+                  }`}
+                >
+                  <span>⚠️ Costo Pendiente</span>
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] bg-amber-200/60">{catalogStats.pending}</span>
+                </button>
+
+                {priceFilter === 'pending' && (
+                  <span className="text-[11px] text-amber-800 font-semibold italic ml-auto hidden md:inline">
+                    💡 Escribe el costo que acuerdes en el taller y pulsa Enter para calcular su precio de venta.
+                  </span>
+                )}
+              </div>
             </div>
 
-            {catalog.length === 0 ? (
+            {filteredCatalog.length === 0 ? (
               <div className="bg-white rounded-3xl p-10 text-center border-2 border-dashed border-slate-200 space-y-2">
                 <Package className="w-12 h-12 text-slate-300 mx-auto" />
-                <h4 className="font-bold text-slate-700 text-sm">Tu catálogo está listo y vacío</h4>
+                <h4 className="font-bold text-slate-700 text-sm">No se encontraron modelos con este filtro</h4>
                 <p className="text-xs text-slate-500 max-w-md mx-auto">
-                  Usa los campos de arriba para escribir tu primer modelo con su tamaño, tipo de esfera, piezas por paquete y costo artesano.
+                  Prueba cambiando el término de búsqueda o selecciona "Todos" para ver los 90 modelos catalogados.
                 </p>
+                <button
+                  onClick={() => { setSearchFilter(''); setPriceFilter('all'); }}
+                  className="mt-2 px-4 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold"
+                >
+                  Limpiar Filtros
+                </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredCatalog.map(model => (
                   <div
                     key={model.id}
-                    className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm hover:shadow-md transition-all flex flex-col justify-between space-y-3"
+                    className="bg-white rounded-3xl border border-slate-200 shadow-sm hover:shadow-lg transition-all flex flex-col justify-between overflow-hidden group"
                   >
-                    <div className="space-y-2">
-                      <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <span className="bg-red-100 text-red-800 text-[10px] font-black px-2 py-0.5 rounded-full uppercase">
-                            {model.size}
-                          </span>
-                          <h4 className="font-black text-slate-900 text-base mt-1 leading-snug">
-                            {model.name}
-                          </h4>
-                          <span className="text-xs text-slate-500 font-semibold">
-                            {model.typeName}
-                          </span>
+                    {/* FOTO DEL PRODUCTO / BANNER */}
+                    <div className="relative bg-slate-100 aspect-video overflow-hidden border-b border-slate-100 cursor-pointer" onClick={() => setPreviewModalProduct(model)}>
+                      {model.photoUrl ? (
+                        <img 
+                          src={model.photoUrl} 
+                          alt={model.name} 
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                          loading="lazy"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 p-4 text-center">
+                          <Package className="w-10 h-10 mb-1 opacity-50" />
+                          <span className="text-xs font-bold">Sin Fotografía</span>
                         </div>
+                      )}
 
-                        {model.photoUrl && (
-                          <img src={model.photoUrl} alt={model.name} className="w-14 h-14 rounded-2xl object-cover border" />
+                      {/* Botón flotante para agrandar foto */}
+                      <button 
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setPreviewModalProduct(model); }}
+                        className="absolute bottom-2.5 right-2.5 bg-black/60 hover:bg-black/80 backdrop-blur-md text-white p-2 rounded-xl text-xs transition-colors flex items-center space-x-1"
+                        title="Ver foto en tamaño completo"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span className="text-[10px] font-bold">Ver Foto</span>
+                      </button>
+
+                      {/* Badge de Estado de Precio */}
+                      <div className="absolute top-2.5 left-2.5 flex flex-wrap gap-1.5 items-center">
+                        <span className="bg-slate-950/80 backdrop-blur-md text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                          {model.size}
+                        </span>
+                        {model.artisanCost > 0 ? (
+                          <span className="bg-emerald-600/90 backdrop-blur-md text-white text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+                            <span>🏷️ Taller: ${model.artisanCost}</span>
+                          </span>
+                        ) : (
+                          <span className="bg-amber-500/95 backdrop-blur-md text-slate-950 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm flex items-center space-x-1">
+                            <span>⚠️ Costo Pendiente</span>
+                          </span>
                         )}
                       </div>
 
-                      <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100 space-y-1.5 text-xs">
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Piezas por paquete:</span>
-                          <span className="font-bold text-slate-900">{model.piecesPerPack} pzas</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Costo Artesano (Base):</span>
-                          <span className="font-black text-slate-900">${model.artisanCost} MXN</span>
-                        </div>
-                        <div className="flex justify-between">
-                          <span className="text-slate-500">Precio Venta Tribuna:</span>
-                          <span className="font-black text-amber-700">${model.wholesalePrice} MXN</span>
-                        </div>
-                        <div className="flex justify-between border-t border-slate-200 pt-1 text-[11px]">
-                          <span className="text-emerald-700 font-bold">Margen Bruto Total:</span>
-                          <span className="text-emerald-700 font-black">+${model.wholesalePrice - model.artisanCost} MXN</span>
-                        </div>
-                        <div className="pt-1.5 border-t border-slate-200/60 text-[10px] text-slate-500 flex flex-wrap gap-1">
-                          <span className="bg-amber-100/80 text-amber-900 px-1.5 py-0.5 rounded font-semibold">18% Castores</span>
-                          <span className="bg-amber-100/80 text-amber-900 px-1.5 py-0.5 rounded font-semibold">13% Troncal</span>
-                          <span className="bg-amber-100/80 text-amber-900 px-1.5 py-0.5 rounded font-semibold">13% Embalaje</span>
-                          <span className="bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded font-bold">28% Tribuna</span>
-                          <span className="bg-amber-100/80 text-amber-900 px-1.5 py-0.5 rounded font-semibold">12% Acopio</span>
-                        </div>
-                      </div>
-
-                      <div className="text-[11px] text-slate-500 truncate">
-                        📍 Taller: <strong>{model.artisanProvider}</strong>
+                      {/* Badge de Piezas por Paquete */}
+                      <div className="absolute top-2.5 right-2.5">
+                        <span className="bg-white/90 backdrop-blur-md text-slate-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-sm">
+                          📦 {model.piecesPerPack} {model.piecesPerPack === 1 ? 'pieza' : 'pzas/pack'}
+                        </span>
                       </div>
                     </div>
 
-                    {/* Acciones del modelo */}
-                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
-                      <div className="flex items-center space-x-1">
-                        <button
-                          onClick={() => handleEditModel(model)}
-                          className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Editar modelo"
-                        >
-                          <Edit3 className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteModel(model.id)}
-                          className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors"
-                          title="Eliminar modelo"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
+                    {/* CUERPO DE LA TARJETA */}
+                    <div className="p-4 space-y-3 flex-1 flex flex-col justify-between">
+                      <div className="space-y-1.5">
+                        <div className="flex items-center justify-between text-xs text-slate-500">
+                          <span className="font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md">
+                            {model.typeName}
+                          </span>
+                          <span className="text-[11px] font-mono text-slate-400">
+                            {model.code}
+                          </span>
+                        </div>
+
+                        <h4 className="font-black text-slate-900 text-base leading-snug">
+                          {model.name}
+                        </h4>
+
+                        {model.notes && (
+                          <p className="text-xs text-slate-600 line-clamp-2 leading-relaxed bg-slate-50 p-2 rounded-xl border border-slate-100">
+                            {model.notes}
+                          </p>
+                        )}
                       </div>
 
-                      <button
-                        onClick={() => {
-                          handleUpdateOrderQty(model.id, 1);
-                          setActiveCatalogTab('order');
-                        }}
-                        className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1 shadow-xs"
-                      >
-                        <Plus className="w-3.5 h-3.5" />
-                        <span>Agregar al Pedido</span>
-                      </button>
+                      {/* EDITOR RÁPIDO DE PRECIO DE COMPRA & DESGLOSE TRIBUNA */}
+                      <div className="bg-gradient-to-br from-slate-50 to-slate-100/80 p-3 rounded-2xl border border-slate-200/80 space-y-2">
+                        {/* Input interactivo de Costo Taller */}
+                        <div>
+                          <div className="flex items-center justify-between mb-1">
+                            <label className="text-[11px] font-bold text-slate-700 flex items-center space-x-1">
+                              <span>💵 Costo Taller (Compra):</span>
+                            </label>
+                            {model.artisanCost === 0 && (
+                              <span className="text-[10px] text-amber-700 font-extrabold animate-pulse">
+                                ¡Pon tu precio aquí!
+                              </span>
+                            )}
+                          </div>
+                          <div className="relative">
+                            <span className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">$</span>
+                            <input
+                              type="number"
+                              min="0"
+                              step="1"
+                              key={`${model.id}-${model.artisanCost}`}
+                              defaultValue={model.artisanCost > 0 ? model.artisanCost : ''}
+                              placeholder="Escribe costo acordado..."
+                              onBlur={(e) => handleInlinePriceUpdate(model.id, e.target.value)}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleInlinePriceUpdate(model.id, e.currentTarget.value);
+                                  e.currentTarget.blur();
+                                }
+                              }}
+                              className={`w-full pl-6 pr-14 py-1.5 text-xs font-black rounded-xl border transition-all ${
+                                model.artisanCost > 0 
+                                  ? 'bg-white border-slate-300 text-slate-900 focus:ring-2 focus:ring-emerald-500/20' 
+                                  : 'bg-amber-50/80 border-amber-300 text-amber-950 placeholder-amber-700/60 focus:ring-2 focus:ring-amber-500/30'
+                              }`}
+                            />
+                            <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">MXN</span>
+                          </div>
+                        </div>
+
+                        {/* Precio Calculado Tribuna */}
+                        <div className="pt-1.5 border-t border-slate-200/80 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] text-slate-500 font-bold block uppercase tracking-wider">
+                              Venta Mayorista Tribuna:
+                            </span>
+                            <span className="text-base font-black text-amber-800">
+                              ${model.wholesalePrice.toLocaleString()} MXN
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-emerald-700 font-bold block uppercase tracking-wider">
+                              Margen Estimado:
+                            </span>
+                            <span className="text-xs font-black text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-lg inline-block">
+                              +${(model.wholesalePrice - model.artisanCost).toLocaleString()} MXN
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Desglose de los 5 factores de la fórmula */}
+                        <div className="pt-1.5 border-t border-slate-200/60 text-[10px] text-slate-500 flex flex-wrap gap-1">
+                          <span className="bg-slate-200/80 text-slate-800 px-1.5 py-0.5 rounded font-semibold">18% Castores</span>
+                          <span className="bg-slate-200/80 text-slate-800 px-1.5 py-0.5 rounded font-semibold">13% Troncal</span>
+                          <span className="bg-slate-200/80 text-slate-800 px-1.5 py-0.5 rounded font-semibold">13% Embalaje</span>
+                          <span className="bg-emerald-100 text-emerald-900 px-1.5 py-0.5 rounded font-black">28% Tribuna</span>
+                          <span className="bg-slate-200/80 text-slate-800 px-1.5 py-0.5 rounded font-semibold">12% Acopio</span>
+                        </div>
+
+                        <div className="text-[10px] text-slate-500 truncate pt-0.5">
+                          📍 Taller: <strong>{model.artisanProvider}</strong>
+                        </div>
+                      </div>
+
+                      {/* Acciones del modelo */}
+                      <div className="pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+                        <div className="flex items-center space-x-1">
+                          <button
+                            type="button"
+                            onClick={() => handleEditModel(model)}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Editar todos los campos del modelo"
+                          >
+                            <Edit3 className="w-4 h-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteModel(model.id)}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-slate-100 rounded-lg transition-colors"
+                            title="Eliminar modelo del catálogo"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            handleUpdateOrderQty(model.id, 1);
+                            setActiveCatalogTab('order');
+                          }}
+                          className="bg-amber-400 hover:bg-amber-300 active:scale-95 text-slate-950 font-black px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+                        >
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Agregar al Pedido</span>
+                        </button>
+                      </div>
                     </div>
 
                   </div>
@@ -1184,9 +1425,19 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
                           }`}
                         >
                           <div className="flex items-center space-x-3">
-                            <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 font-black text-xs flex items-center justify-center flex-shrink-0">
-                              {model.size.substring(0, 2)}
-                            </div>
+                            {model.photoUrl ? (
+                              <img 
+                                src={model.photoUrl} 
+                                alt={model.name} 
+                                onClick={() => setPreviewModalProduct(model)}
+                                className="w-12 h-12 rounded-xl object-cover border border-slate-200 flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity shadow-xs" 
+                                title="Ver foto ampliada"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 rounded-xl bg-red-100 text-red-700 font-black text-xs flex items-center justify-center flex-shrink-0">
+                                {model.size.substring(0, 2)}
+                              </div>
+                            )}
                             <div>
                               <div className="font-black text-slate-900 text-sm">{model.name}</div>
                               <div className="text-xs text-slate-500">
@@ -1583,6 +1834,184 @@ export default function ChignahuapanCatalogManager({ onOpenShippingQuote }) {
             </div>
           )}
 
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: VISOR DE FOTO EN ALTA RESOLUCIÓN Y DETALLES ARTESANALES */}
+      {/* ========================================================================= */}
+      {previewModalProduct && (
+        <div 
+          className="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setPreviewModalProduct(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-4xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-200 flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Cabecera del Modal */}
+            <div className="flex items-center justify-between p-4 sm:p-5 border-b border-slate-100">
+              <div className="flex items-center space-x-2">
+                <span className="bg-emerald-600 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                  {previewModalProduct.size}
+                </span>
+                <span className="text-xs font-bold text-slate-500">
+                  {previewModalProduct.typeName} · {previewModalProduct.code}
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setPreviewModalProduct(null)}
+                className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-600 flex items-center justify-center transition-colors"
+                title="Cerrar visor"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Contenido Principal: Foto + Ficha */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5 p-5 sm:p-6">
+              {/* Imagen en gran formato */}
+              <div className="bg-slate-950 rounded-2xl overflow-hidden flex items-center justify-center min-h-[280px] max-h-[460px] border border-slate-800 relative group">
+                {previewModalProduct.photoUrl ? (
+                  <img
+                    src={previewModalProduct.photoUrl}
+                    alt={previewModalProduct.name}
+                    className="max-h-[460px] w-full object-contain"
+                  />
+                ) : (
+                  <div className="text-slate-500 text-xs text-center p-8">
+                    Sin Fotografía Cargada
+                  </div>
+                )}
+                <div className="absolute bottom-2 left-2 bg-black/70 backdrop-blur-md text-white text-[10px] px-2.5 py-1 rounded-lg">
+                  📸 Foto tomada en taller de Chignahuapan
+                </div>
+              </div>
+
+              {/* Ficha Técnica y Acciones */}
+              <div className="space-y-4 flex flex-col justify-between">
+                <div className="space-y-3">
+                  <div>
+                    <h3 className="text-xl font-black text-slate-900 leading-snug">
+                      {previewModalProduct.name}
+                    </h3>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      📍 Taller Artesanal: <strong className="text-slate-800">{previewModalProduct.artisanProvider}</strong>
+                    </div>
+                  </div>
+
+                  {previewModalProduct.notes && (
+                    <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-100 space-y-1">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
+                        Detalles & Acabados Artesanales:
+                      </span>
+                      <p className="text-xs text-slate-700 leading-relaxed">
+                        {previewModalProduct.notes}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Precios & Edición Rápida */}
+                  <div className="bg-gradient-to-br from-emerald-50/70 to-amber-50/50 rounded-2xl p-4 border border-emerald-200/50 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-700">Contenido del empaque:</span>
+                      <span className="text-xs font-black text-slate-900 bg-white px-2.5 py-1 rounded-lg border border-slate-200">
+                        📦 {previewModalProduct.piecesPerPack} {previewModalProduct.piecesPerPack === 1 ? 'pieza' : 'piezas / paquete'}
+                      </span>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <label className="text-xs font-bold text-slate-700">
+                          Costo Taller Artesano ($ MXN):
+                        </label>
+                        {previewModalProduct.artisanCost > 0 ? (
+                          <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full">
+                            🏷️ Etiqueta Detectada
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-bold text-amber-800 bg-amber-100 px-2 py-0.5 rounded-full">
+                            ⚠️ Costo por Asignar
+                          </span>
+                        )}
+                      </div>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">$</span>
+                        <input
+                          type="number"
+                          min="0"
+                          step="1"
+                          defaultValue={previewModalProduct.artisanCost > 0 ? previewModalProduct.artisanCost : ''}
+                          placeholder="Ingresa costo acordado..."
+                          onChange={(e) => {
+                            const val = parseFloat(e.target.value) || 0;
+                            handleInlinePriceUpdate(previewModalProduct.id, val);
+                            setPreviewModalProduct(prev => ({
+                              ...prev,
+                              artisanCost: val,
+                              wholesalePrice: Math.round(val * 1.84)
+                            }));
+                          }}
+                          className="w-full pl-7 pr-14 py-2 bg-white border border-slate-300 rounded-xl text-sm font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                        />
+                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">MXN</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                      <div>
+                        <span className="text-[10px] text-slate-500 font-bold block uppercase">
+                          Precio Venta Mayorista (+84%):
+                        </span>
+                        <span className="text-lg font-black text-amber-800">
+                          ${previewModalProduct.wholesalePrice.toLocaleString()} MXN
+                        </span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[10px] text-emerald-700 font-bold block uppercase">
+                          Ganancia Tribuna:
+                        </span>
+                        <span className="text-xs font-black text-emerald-800 bg-emerald-100 px-2 py-1 rounded-lg inline-block">
+                          +${(previewModalProduct.wholesalePrice - previewModalProduct.artisanCost).toLocaleString()} MXN
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Botones de Acción */}
+                <div className="pt-3 border-t border-slate-100 flex flex-col sm:flex-row gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleUpdateOrderQty(previewModalProduct.id, 1);
+                      setPreviewModalProduct(null);
+                      setActiveCatalogTab('order');
+                    }}
+                    className="flex-1 bg-amber-400 hover:bg-amber-300 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-sm transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Agregar al Pedido de Compra</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const mod = previewModalProduct;
+                      setPreviewModalProduct(null);
+                      handleEditModel(mod);
+                    }}
+                    className="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs flex items-center justify-center space-x-1 transition-colors"
+                  >
+                    <Edit3 className="w-4 h-4" />
+                    <span>Editar Ficha</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
       )}
 
