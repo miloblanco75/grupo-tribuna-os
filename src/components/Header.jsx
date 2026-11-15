@@ -153,6 +153,20 @@ export default function Header({
           </button>
 
           <button
+            onClick={() => setCurrentTab('agency')}
+            className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-all flex items-center space-x-1.5 ${
+              currentTab === 'agency'
+                ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 font-black shadow-md border border-amber-300'
+                : 'bg-amber-950/40 text-amber-300 hover:text-white hover:bg-amber-900/40 border border-amber-700/40 font-bold'
+            }`}
+          >
+            <span>🏢 Agencia Castores Hub</span>
+            <span className="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+              Puntos 5%
+            </span>
+          </button>
+
+          <button
             onClick={() => setCurrentTab('projects')}
             className={`px-3 py-1.5 rounded-lg whitespace-nowrap transition-colors flex items-center space-x-1.5 ${
               currentTab === 'projects'

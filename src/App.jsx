@@ -11,6 +11,7 @@ import AmenitiesManager from './components/AmenitiesManager';
 import ExpansionPipelineManager from './components/ExpansionPipelineManager';
 import ExportCatalogManager from './components/ExportCatalogManager';
 import ChignahuapanLogisticsManager from './components/ChignahuapanLogisticsManager';
+import CastoresAgencyManager from './components/CastoresAgencyManager';
 import InstallPromptModal from './components/InstallPromptModal';
 
 import { 
@@ -369,6 +370,13 @@ export default function App() {
 
         {currentTab === 'chignahuapan' && (
           <ChignahuapanLogisticsManager />
+        )}
+
+        {currentTab === 'agency' && (
+          <CastoresAgencyManager 
+            onNavigateToCatalog={() => setCurrentTab('chignahuapan')}
+            onNavigateToOrders={() => setCurrentTab('chignahuapan')}
+          />
         )}
 
         {currentTab === 'projects' && (

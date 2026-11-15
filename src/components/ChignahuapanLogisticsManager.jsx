@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 
 import ChignahuapanCatalogManager from './ChignahuapanCatalogManager';
+import CastoresAgencyManager from './CastoresAgencyManager';
 
 import {
   CASTORES_ALLIANCE_INFO,
@@ -589,6 +590,21 @@ export default function ChignahuapanLogisticsManager() {
       <div className="flex items-center space-x-2 border-b border-slate-200 overflow-x-auto pb-1 scrollbar-none">
         
         <button
+          onClick={() => setActiveTab('agency')}
+          className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
+            activeTab === 'agency'
+              ? 'bg-gradient-to-r from-amber-500 via-amber-400 to-yellow-500 text-slate-950 shadow-md'
+              : 'bg-amber-50 hover:bg-amber-100 text-amber-950 border border-amber-300 font-bold'
+          }`}
+        >
+          <Store className="w-4 h-4 text-emerald-700" />
+          <span>🏢 Agencia Castores Hub (Mostrador & Afiliados)</span>
+          <span className="bg-emerald-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full">
+            5% Puntos
+          </span>
+        </button>
+
+        <button
           onClick={() => setActiveTab('catalog')}
           className={`flex items-center space-x-2 px-4 py-2.5 rounded-xl font-black text-xs sm:text-sm transition-all whitespace-nowrap ${
             activeTab === 'catalog'
@@ -664,6 +680,16 @@ export default function ChignahuapanLogisticsManager() {
         </button>
 
       </div>
+
+      {/* ========================================================================= */}
+      {/* PESTAÑA AGENCIA: AGENCIA CASTORES HUB & AFILIADOS (MOSTRADOR Y PUNTOS 5%) */}
+      {/* ========================================================================= */}
+      {activeTab === 'agency' && (
+        <CastoresAgencyManager 
+          onNavigateToCatalog={() => setActiveTab('catalog')}
+          onNavigateToOrders={() => setActiveTab('orders')}
+        />
+      )}
 
       {/* ========================================================================= */}
       {/* PESTAÑA 0: CATÁLOGO DE ESFERAS (MÓVIL & COMPRA CONSOLIDADA) */}
