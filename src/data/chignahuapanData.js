@@ -94,8 +94,21 @@ export const CHIGNAHUAPAN_HUB_INFO = {
   storageCapacityBoxes: 1800,
   currentStoredBoxes: 485,
   shuttleUnit: 'Van Sprinter 3.5 Ton con suspensión neumática antishock',
-  shuttleSchedule: 'Salidas diarias de Chignahuapan a Puebla (Terminal Castores) a las 18:30 hrs',
+  shuttleSchedule: 'Salidas configurables manualmente según acumulación de carga',
   shuttleTransferFeeStandard: 85.00 // Costo estándar por bulto/caja por flete Chignahuapan -> Puebla
+};
+
+export const INITIAL_SHUTTLE_CONFIG = {
+  departureMode: 'MANUAL', // 'MANUAL' | 'POR_VOLUMEN' | 'PROGRAMADA'
+  departureTime: '18:30',
+  departureFrequencyText: 'Horario manual según acumulación de carga',
+  daysOperating: ['Lunes', 'Miércoles', 'Viernes', 'Sábado', 'Domingo'],
+  cutoffTime: '17:30',
+  minBoxesToDepart: 40,
+  assignedDriver: 'Rodrigo Castelán',
+  assignedUnit: 'Van Sprinter 3.5 Ton (Suspensión Neumática)',
+  statusText: 'Salida Manual / Por Definir',
+  notes: 'Salidas troncales ajustables manualmente según volumen acumulado en bodega.'
 };
 
 export const PACKAGING_CATALOG = [

@@ -36,6 +36,7 @@ import {
   CASTORES_ALLIANCE_INFO,
   INITIAL_CASTORES_WALLET,
   CHIGNAHUAPAN_HUB_INFO,
+  INITIAL_SHUTTLE_CONFIG,
   PACKAGING_CATALOG,
   INITIAL_ARTISANS,
   INITIAL_PICKUP_SCHEDULE,
@@ -63,6 +64,18 @@ export default function ChignahuapanLogisticsManager() {
   const [wallet, setWallet] = useState(() => {
     const saved = localStorage.getItem('tribuna_castores_wallet_v1');
     return saved ? JSON.parse(saved) : INITIAL_CASTORES_WALLET;
+  });
+
+  const [shuttleConfig] = useState(() => {
+    const saved = localStorage.getItem('tribuna_shuttle_config_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_SHUTTLE_CONFIG;
   });
 
   // Pestaña activa dentro del módulo de Chignahuapan: 'catalog' por defecto para catalogar en ruta
@@ -460,10 +473,16 @@ export default function ChignahuapanLogisticsManager() {
                 <MapPin className="w-4 h-4 text-red-400" />
                 <span>Bodega Chignahuapan: <strong>{CHIGNAHUAPAN_HUB_INFO.currentStoredBoxes} / {CHIGNAHUAPAN_HUB_INFO.storageCapacityBoxes} cajas</strong></span>
               </div>
-              <div className="flex items-center space-x-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
-                <Truck className="w-4 h-4 text-amber-400" />
-                <span>Salida Troncal Puebla: <strong>18:30 hrs Diaria</strong></span>
-              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab('agency')}
+                className="flex items-center space-x-1.5 bg-slate-800/80 hover:bg-slate-700 px-3 py-1.5 rounded-xl border border-slate-700 hover:border-amber-400 text-left transition-colors cursor-pointer group"
+                title="Hacer clic para ver y configurar las salidas a Puebla en la Agencia"
+              >
+                <Truck className="w-4 h-4 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span>Salida Troncal Puebla: <strong className="text-amber-300">{shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Por definir'}</strong> ({shuttleConfig.statusText || shuttleConfig.departureFrequencyText})</span>
+                <span className="text-[10px] text-sky-400 font-bold ml-1">✏️ Configurar</span>
+              </button>
               <div className="flex items-center space-x-1.5 bg-slate-800/80 px-3 py-1.5 rounded-xl border border-slate-700">
                 <ShieldCheck className="w-4 h-4 text-emerald-400" />
                 <span>Garantía de Cristal Soplado: <strong>100% Protegido</strong></span>

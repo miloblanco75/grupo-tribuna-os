@@ -30,12 +30,14 @@ import {
   ChevronRight,
   TrendingUp,
   Boxes,
-  HelpCircle
+  HelpCircle,
+  Settings
 } from 'lucide-react';
 
 import {
   CASTORES_ALLIANCE_INFO,
   CHIGNAHUAPAN_HUB_INFO,
+  INITIAL_SHUTTLE_CONFIG,
   PACKAGING_CATALOG,
   INITIAL_ARTISANS,
   INITIAL_ORDERS,
@@ -80,6 +82,26 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   useEffect(() => {
     localStorage.setItem('tribuna_chignahuapan_orders_v1', JSON.stringify(agencyOrders));
   }, [agencyOrders]);
+
+  // Configuración manual de Salidas Troncales a Puebla (Horario, chofer, días, etc.)
+  const [shuttleConfig, setShuttleConfig] = useState(() => {
+    const saved = localStorage.getItem('tribuna_shuttle_config_v1');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return INITIAL_SHUTTLE_CONFIG;
+  });
+
+  const [isShuttleModalOpen, setIsShuttleModalOpen] = useState(false);
+  const [tempShuttleConfig, setTempShuttleConfig] = useState(shuttleConfig);
+
+  useEffect(() => {
+    localStorage.setItem('tribuna_shuttle_config_v1', JSON.stringify(shuttleConfig));
+  }, [shuttleConfig]);
 
   // Pestaña activa del sistema de la agencia:
   // 'counter' (Mostrador / Recepción)
@@ -462,10 +484,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <MapPin className="w-3.5 h-3.5 text-red-400" />
                 <span>Bodega Hub: <strong>Km 2.8 Libramiento Chignahuapan</strong></span>
               </div>
-              <div className="flex items-center space-x-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
-                <Truck className="w-3.5 h-3.5 text-amber-400" />
-                <span>Salida Troncal a Puebla: <strong>18:30 hrs Diaria</strong></span>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setTempShuttleConfig({ ...shuttleConfig });
+                  setIsShuttleModalOpen(true);
+                }}
+                className="flex items-center space-x-1.5 bg-slate-900/90 hover:bg-slate-800 px-3 py-1.5 rounded-xl border border-slate-700 hover:border-amber-400 transition-all text-left group cursor-pointer"
+                title="Hacer clic para definir manualmente los horarios de salida a Puebla"
+              >
+                <Truck className="w-3.5 h-3.5 text-amber-400 group-hover:scale-110 transition-transform" />
+                <span>Salida a Puebla: <strong className="text-amber-300">{shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Por definir'}</strong> ({shuttleConfig.statusText || shuttleConfig.departureFrequencyText})</span>
+                <span className="text-[10px] text-sky-400 font-bold ml-1 bg-sky-950 px-1.5 py-0.5 rounded border border-sky-700">⚙️ Definir</span>
+              </button>
               <div className="flex items-center space-x-1.5 bg-slate-900/80 px-3 py-1.5 rounded-xl border border-slate-800">
                 <Gift className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Recompensa al Comercio: <strong>5% en Puntos Canjeables</strong></span>
@@ -594,7 +625,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
           }`}
         >
           <Truck className="w-4 h-4 text-emerald-500" />
-          <span>🚐 Salida Diaria a Puebla (18:30 hrs)</span>
+          <span>🚐 Salidas a Puebla ({shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Manual'})</span>
         </button>
       </div>
 
@@ -1681,31 +1712,52 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       )}
 
       {/* ========================================================================= */}
-      {/* ÁREA 5: MANIFIESTO DE SALIDA DIARIA A TERMINAL PUEBLA (18:30 HRS) */}
+      {/* ========================================================================= */}
+      {/* ÁREA 5: MANIFIESTO DE SALIDA A TERMINAL PUEBLA (CONFIGURABLE MANUALMENTE) */}
       {/* ========================================================================= */}
       {activeSubTab === 'manifest' && (
         <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-sm space-y-6">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
             <div>
-              <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
-                Conexión Troncal Chignahuapan → Puebla
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
+                  Conexión Troncal Chignahuapan → Puebla
+                </span>
+                <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {shuttleConfig.statusText || 'Salida Manual'}
+                </span>
+              </div>
               <h2 className="text-xl font-black text-slate-900 mt-1">
-                Manifiesto de Carga para Salida Diaria (18:30 hrs)
+                Manifiesto de Carga: Salida a Puebla ({shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Horario Manual'})
               </h2>
               <p className="text-xs text-slate-500">
-                Unidad asignada: <strong>{CHIGNAHUAPAN_HUB_INFO.shuttleUnit}</strong> · Chofer: <strong>Rodrigo Castelán</strong>
+                Frecuencia: <strong>{shuttleConfig.departureFrequencyText}</strong> · Chofer: <strong>{shuttleConfig.assignedDriver}</strong> · Unidad: <strong>{shuttleConfig.assignedUnit}</strong>
               </p>
             </div>
 
-            <button
-              type="button"
-              onClick={() => window.print()}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm"
-            >
-              <Printer className="w-4 h-4" />
-              <span>Imprimir Manifiesto del Chofer</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setTempShuttleConfig({ ...shuttleConfig });
+                  setIsShuttleModalOpen(true);
+                }}
+                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+                title="Configurar horario, frecuencia o salida por volumen manualmente"
+              >
+                <Settings className="w-4 h-4" />
+                <span>Configurar Salida</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Imprimir Manifiesto</span>
+              </button>
+            </div>
           </div>
 
           <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs flex flex-wrap items-center justify-between gap-4">
@@ -1714,8 +1766,12 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <span className="font-black text-slate-900 text-sm">Bodega Chignahuapan ➔ Terminal Castores Puebla</span>
             </div>
             <div>
+              <span className="text-slate-400 block font-bold">Hora Salida Establecida:</span>
+              <span className="font-black text-amber-700 text-sm">{shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Sujeto a volumen'}</span>
+            </div>
+            <div>
               <span className="text-slate-400 block font-bold">Hora Límite de Recepción:</span>
-              <span className="font-black text-amber-700 text-sm">17:45 hrs</span>
+              <span className="font-black text-slate-900 text-sm">{shuttleConfig.cutoffTime ? `${shuttleConfig.cutoffTime} hrs` : 'Flexible'}</span>
             </div>
             <div>
               <span className="text-slate-400 block font-bold">Total Paquetes a Bordo:</span>
@@ -1862,6 +1918,210 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <span>Imprimir</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: ESTABLECER SALIDAS TRONCALES A PUEBLA MANUALMENTE */}
+      {/* ========================================================================= */}
+      {isShuttleModalOpen && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in"
+          onClick={() => setIsShuttleModalOpen(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-7 space-y-5 shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div>
+                <span className="text-[10px] font-black text-amber-600 uppercase tracking-wider block">
+                  Configuración Operativa Troncal
+                </span>
+                <h3 className="text-lg font-black text-slate-900 mt-0.5">
+                  Establecer Salidas Chignahuapan → Puebla
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsShuttleModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                setShuttleConfig(tempShuttleConfig);
+                setIsShuttleModalOpen(false);
+                alert(`✅ Horario de salida actualizado:\nHora: ${tempShuttleConfig.departureTime || 'Por definir'} hrs\nFrecuencia: ${tempShuttleConfig.departureFrequencyText}\nChofer: ${tempShuttleConfig.assignedDriver}`);
+              }}
+              className="space-y-4 text-xs"
+            >
+              {/* Modo de Salida */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Criterio / Modo de Salida:</label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setTempShuttleConfig(prev => ({ 
+                      ...prev, 
+                      departureMode: 'MANUAL',
+                      statusText: 'Salida Manual / Por Definir'
+                    }))}
+                    className={`py-2 px-2.5 rounded-xl text-xs font-bold border text-center transition-all ${
+                      tempShuttleConfig.departureMode === 'MANUAL'
+                        ? 'bg-amber-500 text-slate-950 border-amber-500 shadow-sm'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    🛠️ Manual / Por Definir
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTempShuttleConfig(prev => ({ 
+                      ...prev, 
+                      departureMode: 'POR_VOLUMEN',
+                      statusText: `Al juntar ${prev.minBoxesToDepart || 40} cajas`
+                    }))}
+                    className={`py-2 px-2.5 rounded-xl text-xs font-bold border text-center transition-all ${
+                      tempShuttleConfig.departureMode === 'POR_VOLUMEN'
+                        ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    📦 Por Volumen Mínimo
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setTempShuttleConfig(prev => ({ 
+                      ...prev, 
+                      departureMode: 'PROGRAMADA',
+                      statusText: 'Horario Fijo Programado'
+                    }))}
+                    className={`py-2 px-2.5 rounded-xl text-xs font-bold border text-center transition-all ${
+                      tempShuttleConfig.departureMode === 'PROGRAMADA'
+                        ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+                        : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    🕒 Horario Fijo
+                  </button>
+                </div>
+              </div>
+
+              {/* Hora de Salida y Hora Límite de Recepción */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Hora de Salida Manual / Prevista (hrs):</label>
+                  <input
+                    type="time"
+                    value={tempShuttleConfig.departureTime || ''}
+                    onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, departureTime: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-black text-slate-900 text-sm focus:outline-none focus:bg-white"
+                  />
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Puedes cambiar la hora cada día según sea necesario.</span>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Hora Límite de Recepción en Bodega:</label>
+                  <input
+                    type="time"
+                    value={tempShuttleConfig.cutoffTime || ''}
+                    onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, cutoffTime: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-black text-slate-900 text-sm focus:outline-none focus:bg-white"
+                  />
+                  <span className="text-[10px] text-slate-400 block mt-0.5">Límite para que turistas entreguen cajas antes del viaje.</span>
+                </div>
+              </div>
+
+              {/* Frecuencia / Días de Operación */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Frecuencia o Días de Corrida:</label>
+                <input
+                  type="text"
+                  value={tempShuttleConfig.departureFrequencyText || ''}
+                  onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, departureFrequencyText: e.target.value }))}
+                  placeholder="Ej. Lunes a Domingo, o Lunes, Miércoles y Viernes, o Según carga"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-bold text-slate-800 focus:outline-none focus:bg-white"
+                />
+              </div>
+
+              {/* Volumen Mínimo de Cajas */}
+              {tempShuttleConfig.departureMode === 'POR_VOLUMEN' && (
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Cajas Mínimas para Despachar la Camioneta:</label>
+                  <input
+                    type="number"
+                    min="10"
+                    max="300"
+                    value={tempShuttleConfig.minBoxesToDepart || 40}
+                    onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, minBoxesToDepart: parseInt(e.target.value) || 40 }))}
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-black text-slate-900"
+                  />
+                </div>
+              )}
+
+              {/* Chofer y Unidad */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Chofer Responsable:</label>
+                  <input
+                    type="text"
+                    value={tempShuttleConfig.assignedDriver || ''}
+                    onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, assignedDriver: e.target.value }))}
+                    placeholder="Ej. Rodrigo Castelán"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Unidad / Vehículo Asignado:</label>
+                  <input
+                    type="text"
+                    value={tempShuttleConfig.assignedUnit || ''}
+                    onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, assignedUnit: e.target.value }))}
+                    placeholder="Ej. Van Sprinter 3.5 Ton"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold"
+                  />
+                </div>
+              </div>
+
+              {/* Texto de Estatus Público */}
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Leyenda de Estatus (Visible en toda la App):</label>
+                <input
+                  type="text"
+                  value={tempShuttleConfig.statusText || ''}
+                  onChange={(e) => setTempShuttleConfig(prev => ({ ...prev, statusText: e.target.value }))}
+                  placeholder="Ej. Salida hoy a las 18:30 hrs, o Salida Manual según volumen"
+                  className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl font-semibold text-slate-800"
+                />
+              </div>
+
+              {/* Botón Guardar */}
+              <div className="pt-2 flex gap-2">
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-black py-2.5 rounded-xl shadow-md transition-all active:scale-95 text-xs flex items-center justify-center space-x-1.5"
+                >
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span>Guardar Horario de Salida a Puebla</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsShuttleModalOpen(false)}
+                  className="px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs transition-colors"
+                >
+                  Cancelar
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
