@@ -596,6 +596,181 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
     setIsEditingCastoresGuideInModal(false);
   };
 
+  // Impresión aislada del letrero de mostrador (sin menús, cabeceras ni elementos de la web)
+  const handlePrintCounterSign = () => {
+    const merchantName = activePortalMerchant ? activePortalMerchant.businessName : 'Taller Artesanal de Esferas';
+    const clientCode = activePortalMerchant ? activePortalMerchant.clientNumber : 'CAS-CHIG-001';
+
+    const printWin = window.open('', '_blank', 'width=750,height=900');
+    if (!printWin) {
+      window.print();
+      return;
+    }
+
+    printWin.document.write(`
+      <!DOCTYPE html>
+      <html lang="es">
+        <head>
+          <meta charset="UTF-8">
+          <title>Letrero Mostrador - ${merchantName}</title>
+          <style>
+            @page {
+              size: letter portrait;
+              margin: 15mm;
+            }
+            * {
+              box-sizing: border-box;
+              margin: 0;
+              padding: 0;
+              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            }
+            body {
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              min-height: 98vh;
+              background: #fff;
+              color: #0f172a;
+              padding: 20px;
+            }
+            .sign-border {
+              width: 100%;
+              max-width: 600px;
+              border: 5px solid #0f172a;
+              border-radius: 28px;
+              padding: 40px 32px;
+              text-align: center;
+              background: #ffffff;
+            }
+            .brand-header {
+              display: inline-block;
+              background: #f59e0b;
+              color: #000;
+              font-weight: 900;
+              font-size: 15px;
+              letter-spacing: 1.5px;
+              padding: 6px 20px;
+              border-radius: 8px;
+              border: 2px solid #0f172a;
+              text-transform: uppercase;
+              margin-bottom: 6px;
+            }
+            .brand-sub {
+              font-size: 11px;
+              font-weight: 800;
+              letter-spacing: 2px;
+              color: #64748b;
+              text-transform: uppercase;
+              margin-bottom: 24px;
+            }
+            .headline {
+              font-size: 28px;
+              font-weight: 900;
+              line-height: 1.15;
+              color: #0f172a;
+              text-transform: uppercase;
+              margin-bottom: 8px;
+            }
+            .headline-green {
+              font-size: 26px;
+              font-weight: 900;
+              color: #059669;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 14px;
+            }
+            .body-text {
+              font-size: 13px;
+              font-weight: 600;
+              color: #475569;
+              line-height: 1.45;
+              max-width: 440px;
+              margin: 0 auto 28px auto;
+            }
+            .code-card {
+              background: #fffbeb;
+              border: 3px solid #0f172a;
+              border-radius: 20px;
+              padding: 20px 16px;
+              margin-bottom: 28px;
+            }
+            .code-tag {
+              font-size: 10px;
+              font-weight: 900;
+              letter-spacing: 1.5px;
+              color: #78350f;
+              text-transform: uppercase;
+              margin-bottom: 4px;
+            }
+            .shop-title {
+              font-size: 18px;
+              font-weight: 900;
+              color: #0f172a;
+              margin-bottom: 6px;
+            }
+            .code-number {
+              font-family: monospace;
+              font-size: 38px;
+              font-weight: 900;
+              letter-spacing: 4px;
+              color: #0f172a;
+              background: #ffffff;
+              border: 2px solid #0f172a;
+              border-radius: 12px;
+              display: inline-block;
+              padding: 6px 24px;
+              margin: 4px 0 8px 0;
+            }
+            .code-help {
+              font-size: 11px;
+              font-weight: 700;
+              color: #64748b;
+            }
+            .footer-card {
+              border-top: 3px solid #0f172a;
+              padding-top: 18px;
+              font-size: 13px;
+              font-weight: 800;
+              color: #0f172a;
+              line-height: 1.6;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="sign-border">
+            <div class="brand-header">PAQUETERÍA CASTORES</div>
+            <div class="brand-sub">Agencia Oficial Chignahuapan</div>
+
+            <div class="headline">¿NO TIENES ESPACIO EN TU AUTO?</div>
+            <div class="headline-green">¡TE LAS ENVIAMOS A CASA!</div>
+            <div class="body-text">
+              Compra todas las esferas que quieras. Nosotros te las empacamos y enviamos seguras a cualquier parte de México.
+            </div>
+
+            <div class="code-card">
+              <div class="code-tag">Convenio de esta Tienda:</div>
+              <div class="shop-title">${merchantName}</div>
+              <div class="code-number">${clientCode}</div>
+              <div class="code-help">Menciona este código en bodega para tu tarifa preferencial</div>
+            </div>
+
+            <div class="footer-card">
+              <div>📍 <strong>Bodega Castores:</strong> Libramiento Chignahuapan Km 2.8</div>
+              <div>📲 <strong>WhatsApp de Atención:</strong> +52 797 971 4520</div>
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.focus();
+              window.print();
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWin.document.close();
+  };
+
   // =========================================================================
   // AUTO-REGISTRO / AFILIACIÓN DE NUEVO COMERCIO / PRODUCTOR
   // =========================================================================
@@ -2025,8 +2200,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <div className="flex gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
-                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-2.5 rounded-2xl text-xs flex items-center justify-center space-x-1.5 shadow-md"
+                  onClick={handlePrintCounterSign}
+                  className="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-black py-2.5 rounded-2xl text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all"
                 >
                   <Printer className="w-4 h-4" />
                   <span>Imprimir Letrero para Mostrador</span>
