@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { 
   Store, 
   Package, 
@@ -38,7 +38,8 @@ import {
   Info,
   Camera,
   ShieldAlert,
-  Eye
+  Eye,
+  PenTool
 } from 'lucide-react';
 
 import {
@@ -204,6 +205,81 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   useEffect(() => {
     localStorage.setItem('tribuna_manifest_selected_ids_v1', JSON.stringify(selectedOrderIdsForManifest));
   }, [selectedOrderIdsForManifest]);
+
+  // Estados de Cadena de Custodia & Firma Digital del Chofer
+  const canvasRef = useRef(null);
+  const [isDrawing, setIsDrawing] = useState(false);
+  const [driverSignatureImg, setDriverSignatureImg] = useState(() => {
+    return localStorage.getItem('tribuna_driver_signature_v1') || null;
+  });
+  const [driverLicenseNumber, setDriverLicenseNumber] = useState('LIC-FED-84291-B');
+  const [vehiclePlates, setVehiclePlates] = useState('PB-8291-C (Puebla)');
+  const [signedTimestamp, setSignedTimestamp] = useState(() => {
+    return localStorage.getItem('tribuna_driver_signed_time_v1') || null;
+  });
+  const [driverCustodyNotes, setDriverCustodyNotes] = useState('Recibo en este acto la totalidad de bultos declarados en perfecto estado exterior y sellados.');
+
+  // Handlers para el lienzo de firma digital (touch y mouse)
+  const startDrawing = (e) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    ctx.beginPath();
+    ctx.moveTo(clientX - rect.left, clientY - rect.top);
+    setIsDrawing(true);
+  };
+
+  const draw = (e) => {
+    if (!isDrawing) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.clientX ?? (e.touches && e.touches[0] ? e.touches[0].clientX : 0);
+    const clientY = e.clientY ?? (e.touches && e.touches[0] ? e.touches[0].clientY : 0);
+    ctx.lineTo(clientX - rect.left, clientY - rect.top);
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+  };
+
+  const stopDrawing = () => {
+    setIsDrawing(false);
+  };
+
+  const handleClearSignature = () => {
+    const canvas = canvasRef.current;
+    if (canvas) {
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    setDriverSignatureImg(null);
+    setSignedTimestamp(null);
+    localStorage.removeItem('tribuna_driver_signature_v1');
+    localStorage.removeItem('tribuna_driver_signed_time_v1');
+  };
+
+  const handleSaveSignature = () => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const dataUrl = canvas.toDataURL('image/png');
+    const timestamp = new Date().toLocaleString('es-MX', { 
+      day: '2-digit', 
+      month: '2-digit', 
+      year: 'numeric', 
+      hour: '2-digit', 
+      minute: '2-digit' 
+    });
+    setDriverSignatureImg(dataUrl);
+    setSignedTimestamp(timestamp);
+    localStorage.setItem('tribuna_driver_signature_v1', dataUrl);
+    localStorage.setItem('tribuna_driver_signed_time_v1', timestamp);
+    alert('✍️ ¡Firma del operador guardada exitosamente! La cadena de custodia ha quedado formalmente acreditada en sistema.');
+  };
 
   // Manejador para seleccionar cliente frecuente o comprador anterior
   const handleSelectClientPreset = (presetId) => {
@@ -2577,26 +2653,240 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </table>
             </div>
 
-            {/* SECCIÓN IMPRIMIBLE PARA EL CHOFER (MANIFIESTO OFICIAL CON HOJA DE RUTA) */}
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="space-y-0.5">
-                <span className="font-black text-slate-900 text-sm flex items-center space-x-1.5">
-                  <FileText className="w-4 h-4 text-emerald-700" />
-                  <span>Hoja de Ruta Oficial & Manifiesto para el Operador de la Van</span>
+            {/* MÓDULO INTERACTIVO DE CADENA DE CUSTODIA & FIRMA DIGITAL DEL CHOFER */}
+            <div className="bg-gradient-to-br from-slate-900 to-slate-950 text-white p-5 sm:p-6 rounded-3xl border border-slate-800 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-0.5 rounded-full uppercase tracking-wider">
+                      Protocolo de Cadena de Custodia Legal
+                    </span>
+                    {driverSignatureImg ? (
+                      <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-bold text-[10px] px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400" />
+                        <span>Custodia Aceptada & Firmada</span>
+                      </span>
+                    ) : (
+                      <span className="bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-[10px] px-2.5 py-0.5 rounded-full flex items-center space-x-1">
+                        <AlertCircle className="w-3 h-3 text-rose-400" />
+                        <span>Firma de Operador Pendiente</span>
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-base font-black text-white mt-1 flex items-center space-x-2">
+                    <PenTool className="w-4 h-4 text-amber-400" />
+                    <span>Acta de Entrega-Recepción & Firma Digital del Chofer</span>
+                  </h3>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    El chofer formaliza la recepción de los bultos para el traslado troncal a la Terminal Castores Puebla.
+                  </p>
+                </div>
+
+                {driverSignatureImg && (
+                  <div className="text-right shrink-0">
+                    <span className="text-[10px] text-slate-400 block font-mono">FIRMADO EL:</span>
+                    <span className="text-xs font-mono font-bold text-emerald-400">{signedTimestamp}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* DECLARACIÓN FORMAL DE CUSTODIA */}
+              <div className="bg-slate-800/60 p-3.5 rounded-2xl border border-slate-700/60 text-xs text-slate-300 leading-relaxed">
+                <span className="text-[10px] font-black text-amber-400 uppercase tracking-widest block mb-1">
+                  Declaración de Recepción en Tránsito:
                 </span>
-                <p className="text-slate-500 text-[11px]">
-                  Al presionar "Imprimir Manifiesto", se generará la hoja de embarque exclusiva con los <strong>{selectedOrderIdsForManifest.length} clientes seleccionados</strong>, número de cajas, piezas declaradas e inventario de cristal frágil para inspección en autopista y entrega en la Terminal Castores Puebla.
+                <p>
+                  "Yo, <strong className="text-white">{shuttleConfig.assignedDriver}</strong>, operador acreditado con Licencia Federal <strong className="text-white">{driverLicenseNumber}</strong> a cargo de la unidad <strong className="text-white">{shuttleConfig.assignedUnit}</strong> (Placas: <strong className="text-white">{vehiclePlates}</strong>), hago constar que recibo en este acto bajo mi entera responsabilidad y custodia los <strong className="text-emerald-400">{totalSelectedBoxes} bultos / cajas</strong> conteniendo <strong className="text-emerald-400">{totalSelectedPieces.toLocaleString()} piezas de esferas de cristal</strong> de los clientes seleccionados en este manifiesto, debidamente precintadas con cinta inviolable Castores y en perfecto estado exterior, comprometiéndome a su custodia y traslado directo sin escalas no autorizadas hacia la Terminal Castores Puebla."
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shrink-0 shadow-sm"
-              >
-                <Printer className="w-4 h-4" />
-                <span>Imprimir Hoja de Ruta ({selectedOrderIdsForManifest.length} Envíos)</span>
-              </button>
+              {/* CAMPOS OPERATIVOS DEL CHOFER */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                <div>
+                  <label className="text-[11px] font-bold text-slate-400 block mb-1">Operador / Chofer Transportista:</label>
+                  <input
+                    type="text"
+                    value={shuttleConfig.assignedDriver}
+                    disabled
+                    className="w-full px-3 py-2 bg-slate-800/80 border border-slate-700 rounded-xl font-bold text-white cursor-not-allowed text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-400 block mb-1">No. de Licencia Federal de Conducir:</label>
+                  <input
+                    type="text"
+                    value={driverLicenseNumber}
+                    onChange={(e) => setDriverLicenseNumber(e.target.value)}
+                    placeholder="Ej. LIC-FED-84291-B"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-semibold text-white focus:outline-none focus:border-amber-400 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-[11px] font-bold text-slate-400 block mb-1">Placas de la Unidad Asignada:</label>
+                  <input
+                    type="text"
+                    value={vehiclePlates}
+                    onChange={(e) => setVehiclePlates(e.target.value)}
+                    placeholder="Ej. PB-8291-C"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-xl font-semibold text-white focus:outline-none focus:border-amber-400 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* LIENZO DE FIRMA TÁCTIL / MOUSE (SIGNATURE CANVAS) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-slate-300 flex items-center space-x-1.5">
+                      <PenTool className="w-3.5 h-3.5 text-amber-400" />
+                      <span>Firma del Chofer (Traza con dedo o mouse):</span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleClearSignature}
+                      className="text-[10px] text-rose-400 hover:text-rose-300 underline font-bold"
+                    >
+                      Borrar y Refirmar
+                    </button>
+                  </div>
+
+                  <div className="bg-white rounded-2xl p-2 border-2 border-slate-700 relative overflow-hidden">
+                    <canvas
+                      ref={canvasRef}
+                      width={380}
+                      height={120}
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                      className="w-full h-28 bg-white cursor-crosshair touch-none rounded-xl"
+                    />
+                    <div className="absolute bottom-1 right-2 pointer-events-none text-[9px] text-slate-400 font-mono">
+                      Línea de Firma Oficial
+                    </div>
+                  </div>
+
+                  <p className="text-[10px] text-slate-400">
+                    * Al pulsar "Guardar y Acreditar Firma", se sellará el acta con la hora y fecha exacta de salida.
+                  </p>
+                </div>
+
+                {/* VISTA PREVIA DE FIRMA GUARDADA & BOTONES */}
+                <div className="space-y-3 bg-slate-800/40 p-4 rounded-2xl border border-slate-800">
+                  <span className="text-[11px] font-black uppercase text-slate-400 block tracking-wider">
+                    Estado de la Custodia de Carga:
+                  </span>
+
+                  {driverSignatureImg ? (
+                    <div className="space-y-2">
+                      <div className="bg-white p-2.5 rounded-xl border border-emerald-400 flex items-center justify-center">
+                        <img 
+                          src={driverSignatureImg} 
+                          alt="Firma Chofer" 
+                          className="max-h-16 object-contain" 
+                        />
+                      </div>
+                      <div className="text-[11px] text-emerald-400 font-bold flex items-center space-x-1">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
+                        <span>Firma del operador registrada: {signedTimestamp}</span>
+                      </div>
+                      <span className="text-[10px] text-slate-400 block font-mono">
+                        Folio de Custodia: CUST-CHIG-PUE-{shuttleConfig.departureTime || '1830'}
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="text-center py-4 text-slate-400 text-xs space-y-1">
+                      <div className="text-xl">✍️</div>
+                      <p className="font-semibold text-slate-300">Pendiente de firma en el recuadro</p>
+                      <p className="text-[11px] text-slate-500">Traza la firma del operador y presiona el botón inferior.</p>
+                    </div>
+                  )}
+
+                  <button
+                    type="button"
+                    onClick={handleSaveSignature}
+                    className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 shadow-md transition-all active:scale-95"
+                  >
+                    <CheckCircle2 className="w-4 h-4 text-slate-950" />
+                    <span>Guardar y Acreditar Firma de Chofer</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            {/* SECCIÓN IMPRIMIBLE CON LAS TRES FIRMAS DE CADENA DE CUSTODIA */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs space-y-4">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-200 pb-3">
+                <div className="space-y-0.5">
+                  <span className="font-black text-slate-900 text-sm flex items-center space-x-1.5">
+                    <FileText className="w-4 h-4 text-emerald-700" />
+                    <span>Hoja de Ruta Oficial & Manifiesto Imprimible para Operador y Terminal Puebla</span>
+                  </span>
+                  <p className="text-slate-500 text-[11px]">
+                    Incluye los <strong>{selectedOrderIdsForManifest.length} clientes seleccionados</strong>, inventario de cristal frágil y las firmas de entrega y recepción.
+                  </p>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shrink-0 shadow-sm active:scale-95 transition-all"
+                >
+                  <Printer className="w-4 h-4" />
+                  <span>Imprimir Manifiesto ({selectedOrderIdsForManifest.length} Envíos)</span>
+                </button>
+              </div>
+
+              {/* BLOQUE DE TRES FIRMAS (IMPRIMIBLE) */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
+                {/* 1. Entrega Bodega Hub */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center space-y-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                    1. Entregó (Bodega Hub Chignahuapan)
+                  </span>
+                  <div className="h-14 flex items-center justify-center text-xs font-bold text-slate-800 border-b border-dashed border-slate-300">
+                    Rodrigo Castelán (Encargado Hub)
+                  </div>
+                  <span className="text-[10px] text-slate-500 block font-mono">
+                    Fecha y Hora: {new Date().toLocaleDateString('es-MX')} {shuttleConfig.departureTime || '18:30'} hrs
+                  </span>
+                </div>
+
+                {/* 2. Recibió Chofer Transportista */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center space-y-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                    2. Recibió en Custodia (Chofer Operador)
+                  </span>
+                  <div className="h-14 flex items-center justify-center border-b border-dashed border-slate-300 overflow-hidden">
+                    {driverSignatureImg ? (
+                      <img src={driverSignatureImg} alt="Firma Chofer" className="max-h-12 object-contain" />
+                    ) : (
+                      <span className="text-xs text-slate-400 italic font-mono">Firma en recuadro superior</span>
+                    )}
+                  </div>
+                  <div className="text-[10px] text-slate-600 block">
+                    <strong>{shuttleConfig.assignedDriver}</strong> · Lic: {driverLicenseNumber}
+                  </div>
+                </div>
+
+                {/* 3. Recibe Terminal Castores Puebla */}
+                <div className="bg-white p-3.5 rounded-xl border border-slate-200 text-center space-y-2">
+                  <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                    3. Recibe en Destino (Terminal Puebla)
+                  </span>
+                  <div className="h-14 flex items-center justify-center text-xs text-slate-400 italic border-b border-dashed border-slate-300 font-mono">
+                    Firma de recepción al arribar a terminal
+                  </div>
+                  <span className="text-[10px] text-slate-500 block font-mono">
+                    Sello y Hora de Arribo Puebla: ______________
+                  </span>
+                </div>
+              </div>
             </div>
 
           </div>
