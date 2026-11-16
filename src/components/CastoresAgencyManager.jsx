@@ -596,18 +596,29 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
     setIsEditingCastoresGuideInModal(false);
   };
 
-  // Impresión aislada del letrero de mostrador (sin menús, cabeceras ni elementos de la web)
+  // Impresión 100% aislada del letrero de mostrador usando un iframe invisible (evita bloqueo de popups y nunca imprime la web)
   const handlePrintCounterSign = () => {
     const merchantName = activePortalMerchant ? activePortalMerchant.businessName : 'Taller Artesanal de Esferas';
     const clientCode = activePortalMerchant ? activePortalMerchant.clientNumber : 'CAS-CHIG-001';
 
-    const printWin = window.open('', '_blank', 'width=750,height=900');
-    if (!printWin) {
-      window.print();
-      return;
+    let printIframe = document.getElementById('chignahuapan-sign-print-frame');
+    if (!printIframe) {
+      printIframe = document.createElement('iframe');
+      printIframe.id = 'chignahuapan-sign-print-frame';
+      printIframe.style.position = 'fixed';
+      printIframe.style.right = '0';
+      printIframe.style.bottom = '0';
+      printIframe.style.width = '0';
+      printIframe.style.height = '0';
+      printIframe.style.border = '0';
+      printIframe.style.opacity = '0';
+      printIframe.style.pointerEvents = 'none';
+      document.body.appendChild(printIframe);
     }
 
-    printWin.document.write(`
+    const doc = printIframe.contentWindow.document;
+    doc.open();
+    doc.write(`
       <!DOCTYPE html>
       <html lang="es">
         <head>
@@ -628,14 +639,14 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               display: flex;
               align-items: center;
               justify-content: center;
-              min-height: 98vh;
+              min-height: 95vh;
               background: #fff;
               color: #0f172a;
-              padding: 20px;
+              padding: 10px;
             }
             .sign-border {
               width: 100%;
-              max-width: 600px;
+              max-width: 580px;
               border: 5px solid #0f172a;
               border-radius: 28px;
               padding: 40px 32px;
@@ -759,16 +770,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <div>📲 <strong>WhatsApp de Atención:</strong> +52 797 971 4520</div>
             </div>
           </div>
-          <script>
-            window.onload = function() {
-              window.focus();
-              window.print();
-            };
-          </script>
         </body>
       </html>
     `);
-    printWin.document.close();
+    doc.close();
+
+    setTimeout(() => {
+      try {
+        printIframe.contentWindow.focus();
+        printIframe.contentWindow.print();
+      } catch (err) {
+        console.error('Error al imprimir iframe:', err);
+      }
+    }, 250);
   };
 
   // =========================================================================
