@@ -141,6 +141,134 @@ export const PACKAGING_CATALOG = [
   }
 ];
 
+// Categorías de Contenido Navideño de Chignahuapan para Guías y Manifiestos
+export const SPHERE_CONTENT_CATEGORIES = [
+  {
+    id: 'esferas-clasicas',
+    label: '🔮 Esferas Tradicionales Sopladas al Soplete (Lisas / Doble Textura)',
+    shortLabel: '🔮 Esferas Clásicas',
+    defaultPiecesPerBox: 60,
+    fragility: 'Alta Fragilidad - Cristal Soplado Artesanal',
+    desc: 'Esferas clásicas metalizadas lisas en dorado, rubí, plata y azul cobalto'
+  },
+  {
+    id: 'esferas-diamantadas',
+    label: '✨ Esferas Diamantadas & Escarchadas',
+    shortLabel: '✨ Diamantadas & Glitter',
+    defaultPiecesPerBox: 48,
+    fragility: 'Alta Fragilidad - Acabado con Escarcha y Purpurina',
+    desc: 'Esferas con aplicación diamantada, escarcha fina y destellos reflectivos'
+  },
+  {
+    id: 'esferas-oleo',
+    label: '🎨 Esferas Decoradas al Óleo Fino / Pintadas a Mano',
+    shortLabel: '🎨 Decoradas al Óleo',
+    defaultPiecesPerBox: 36,
+    fragility: 'Extrema Fragilidad - Arte Manual al Óleo',
+    desc: 'Piezas con motivos navideños artesanales: nochebuenas, paisajes nevados y detalles en oro'
+  },
+  {
+    id: 'esferas-led',
+    label: '💡 Esferas Monumentales con Luz LED & Microburbujas',
+    shortLabel: '💡 Con Luz LED',
+    defaultPiecesPerBox: 24,
+    fragility: 'Alta Fragilidad + Componente Electrónico',
+    desc: 'Esferas monumentales con circuito LED interno, nieve artificial y baterías'
+  },
+  {
+    id: 'nacimientos-cristal',
+    label: '👼 Nacimientos & Figuras Escultóricas de Cristal Soplado',
+    shortLabel: '👼 Nacimientos Escultóricos',
+    defaultPiecesPerBox: 12,
+    fragility: 'Extrema Fragilidad - Escultura en Cristal',
+    desc: 'Juegos de misterios navideños, ángeles y figuras tridimensionales de cristal'
+  },
+  {
+    id: 'coronas-herreria',
+    label: '👑 Coronas Navideñas, Herrería & Centros de Mesa',
+    shortLabel: '👑 Herrería & Coronas',
+    defaultPiecesPerBox: 6,
+    fragility: 'Media Fragilidad - Estructura Rígida de Herrería',
+    desc: 'Coronas de forja con esferas tejidas y centros de mesa navideños'
+  },
+  {
+    id: 'lote-surtido',
+    label: '📦 Lote Navideño Surtido (Esferas + Campanas + Faroles)',
+    shortLabel: '📦 Lote Mixto Navideño',
+    defaultPiecesPerBox: 50,
+    fragility: 'Alta Fragilidad Mixta',
+    desc: 'Variedad de esferas surtidas N°6, N°8, campanas y remates de pino'
+  }
+];
+
+// Chips rápidos de contenido para agregar con un clic
+export const CONTENT_QUICK_TAGS = [
+  '🔮 N°6 Clásica (80mm)',
+  '🔮 N°8 Mediana (100mm)',
+  '🔮 N°10 Jumbo (120mm)',
+  '✨ Diamantada Oro',
+  '🎨 Óleo Nochebuena',
+  '❄️ Paisaje Nevado',
+  '🔴 Rubí & Oro',
+  '⚪ Nieve Escarchada',
+  '💡 Luz Micro-LED',
+  '🔔 Campana Cristal',
+  '👑 Corona Herrería',
+  '🌟 Nacimiento Cristal'
+];
+
+// Clientes y Compradores Registrados / Frecuentes
+export const REGISTERED_CLIENTS_PRESETS = [
+  {
+    id: 'cli-01',
+    name: 'Ing. Salvador Garza Villarreal',
+    phone: '+52 81 8329 4410',
+    city: 'Monterrey, Nuevo León',
+    address: 'Av. Vasconcelos #1450, Col. del Valle, San Pedro Garza García, N.L., C.P. 66220',
+    clientType: 'Comprador Mayorista / Boutiques Navideñas'
+  },
+  {
+    id: 'cli-02',
+    name: 'Lic. Claudia Del Río Ramos',
+    phone: '+52 33 3615 9012',
+    city: 'Guadalajara, Jalisco',
+    address: 'Av. Providencia #2450, Col. Providencia, Guadalajara, Jal., C.P. 44630',
+    clientType: 'Comercio Galerías & Decoración'
+  },
+  {
+    id: 'cli-03',
+    name: 'Arq. Rodrigo Montes de Oca',
+    phone: '+52 55 5280 1199',
+    city: 'Ciudad de México (CDMX)',
+    address: 'Homero #910 Depto 402, Polanco V Sección, Miguel Hidalgo, CDMX, C.P. 11560',
+    clientType: 'Despacho de Interiorismo Residencial'
+  },
+  {
+    id: 'cli-04',
+    name: 'Doña Beatriz Alcocer Méndez',
+    phone: '+52 999 924 8832',
+    city: 'Mérida, Yucatán',
+    address: 'Calle 60 Norte #381 x 21 y 23, Col. Buenavista, Mérida, Yuc., C.P. 97125',
+    clientType: 'Distribuidora Peninsular de Artesanías'
+  },
+  {
+    id: 'cli-05',
+    name: 'Dra. Patricia Garza Hinojosa',
+    phone: '+52 81 8122 4500',
+    city: 'Monterrey, Nuevo León',
+    address: 'Sierra Nevada #310, Col. Lomas del Valle, San Pedro Garza García, N.L.',
+    clientType: 'Turista Particular Frecuente'
+  },
+  {
+    id: 'cli-06',
+    name: 'Lic. Mariana Zavala Gómez',
+    phone: '+52 442 216 7890',
+    city: 'Querétaro, Querétaro',
+    address: 'Paseo de la República #10500, Juriquilla, Querétaro, Qro.',
+    clientType: 'Boutique Bazar Navideño'
+  }
+];
+
 export const TIERS_CONFIG = {
   BRONCE: { name: 'Bronce', minServices: 0, pointsPct: 5, color: 'text-amber-800 bg-amber-100 border-amber-300', badge: '🥉 Bronce' },
   PLATA: { name: 'Plata', minServices: 10, pointsPct: 5.5, color: 'text-slate-700 bg-slate-200 border-slate-300', badge: '🥈 Plata' },
@@ -424,10 +552,14 @@ export const INITIAL_ORDERS = [
     buyerName: 'Ing. Salvador Garza Villarreal',
     buyerPhone: '+52 81 8329 4410',
     buyerEmail: 'sgarza@decoracionesmty.com',
+    clientType: 'Comprador Mayorista / Boutiques Navideñas',
     destinationCity: 'Monterrey, Nuevo León',
     destinationAddress: 'Av. Vasconcelos #1450, Col. del Valle, San Pedro Garza García, N.L., C.P. 66220',
     deliveryType: 'Domicilio',
     itemsSummary: '4 Cajas Grandes (480 Esferas Artesanales Tradicionales Espiral Oro y Rubí)',
+    piecesCount: 480,
+    contentCategory: '🔮 Esferas Tradicionales Sopladas al Soplete (Lisas / Doble Textura)',
+    fragilityLevel: 'Alta Fragilidad - Cristal Soplado Artesanal',
     boxesCount: 4,
     totalWeightKg: 28,
     volumetricWeightKg: 42,
@@ -461,10 +593,14 @@ export const INITIAL_ORDERS = [
     buyerName: 'Lic. Claudia Del Río Ramos',
     buyerPhone: '+52 33 3615 9012',
     buyerEmail: 'claudia.delrio@gmail.com',
+    clientType: 'Comercio Galerías & Decoración',
     destinationCity: 'Guadalajara, Jalisco',
     destinationAddress: 'Av. Providencia #2450, Col. Providencia, Guadalajara, Jal., C.P. 44630',
     deliveryType: 'Domicilio',
     itemsSummary: '2 Cajas Jumbo (120 Esferas Monumentales con Nieve Artificial y Luz LED)',
+    piecesCount: 120,
+    contentCategory: '💡 Esferas Monumentales con Luz LED & Microburbujas',
+    fragilityLevel: 'Alta Fragilidad + Componente Electrónico',
     boxesCount: 2,
     totalWeightKg: 18,
     volumetricWeightKg: 35,
@@ -497,10 +633,14 @@ export const INITIAL_ORDERS = [
     buyerName: 'Arq. Rodrigo Montes de Oca',
     buyerPhone: '+52 55 5280 1199',
     buyerEmail: 'rmontes@disenoyespacios.com.mx',
+    clientType: 'Despacho de Interiorismo Residencial',
     destinationCity: 'Ciudad de México (CDMX)',
     destinationAddress: 'Homero #910 Depto 402, Polanco V Sección, Miguel Hidalgo, CDMX, C.P. 11560',
     deliveryType: 'Domicilio',
-    itemsSummary: '3 Cajas Esferas Caladas Edición Especial Vitral Azul y Esmeralda',
+    itemsSummary: '3 Cajas Esferas Caladas Edición Especial Vitral Azul y Esmeralda (72 Pzas)',
+    piecesCount: 72,
+    contentCategory: '🎨 Esferas Decoradas al Óleo Fino / Pintadas a Mano',
+    fragilityLevel: 'Extrema Fragilidad - Arte Manual al Óleo',
     boxesCount: 3,
     totalWeightKg: 12,
     volumetricWeightKg: 20,
@@ -519,7 +659,7 @@ export const INITIAL_ORDERS = [
     totalOperativeCostTribuna: 1176.00,
     tribunaNetProfit: 784.00,
     status: 'En Bodega Chignahuapan (Acopio)',
-    castoresStatus: 'Asignado a van troncal para salida hoy 18:30 hrs hacia Puebla',
+    castoresStatus: 'Asignado a van troncal para salida hacia Puebla',
     estimatedDeliveryDate: '2026-11-09',
     fragilityWarrantyActive: true,
     notes: 'Piezas exclusivas de autor para residencia en Polanco.'
@@ -533,10 +673,14 @@ export const INITIAL_ORDERS = [
     buyerName: 'Doña Beatriz Alcocer Méndez',
     buyerPhone: '+52 999 924 8832',
     buyerEmail: 'balcocer@boutiquemerida.com',
+    clientType: 'Distribuidora Peninsular de Artesanías',
     destinationCity: 'Mérida, Yucatán',
     destinationAddress: 'Calle 60 Norte #381 x 21 y 23, Col. Buenavista, Mérida, Yuc., C.P. 97125',
     deliveryType: 'Ocurre Oficina Castores Mérida Periférico',
-    itemsSummary: '8 Cajas Esferas Navideñas Lisas y Diamantadas Surtidas (Mayoreo)',
+    itemsSummary: '8 Cajas Esferas Navideñas Lisas y Diamantadas Surtidas (384 Pzas Mayoreo)',
+    piecesCount: 384,
+    contentCategory: '📦 Lote Navideño Surtido (Esferas + Campanas + Faroles)',
+    fragilityLevel: 'Alta Fragilidad Mixta',
     boxesCount: 8,
     totalWeightKg: 64,
     volumetricWeightKg: 95,

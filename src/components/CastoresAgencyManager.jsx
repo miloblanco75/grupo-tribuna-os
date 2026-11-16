@@ -31,7 +31,11 @@ import {
   TrendingUp,
   Boxes,
   HelpCircle,
-  Settings
+  Settings,
+  CheckSquare,
+  Square,
+  Tag,
+  Info
 } from 'lucide-react';
 
 import {
@@ -43,7 +47,10 @@ import {
   INITIAL_ORDERS,
   POPULAR_DESTINATIONS,
   TIERS_CONFIG,
-  AGENCY_REWARDS_CATALOG
+  AGENCY_REWARDS_CATALOG,
+  REGISTERED_CLIENTS_PRESETS,
+  SPHERE_CONTENT_CATEGORIES,
+  CONTENT_QUICK_TAGS
 } from '../data/chignahuapanData';
 
 export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateToOrders }) {
@@ -131,15 +138,160 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   // ESTADOS DEL MOSTRADOR / RECEPCIÓN DE ENVÍOS EN BODEGA
   // =========================================================================
   const [counterMerchantId, setCounterMerchantId] = useState(merchants[0]?.id || '');
+
+  // Selección de Cliente / Comprador
+  const [counterClientPresetId, setCounterClientPresetId] = useState('');
+  const [counterClientType, setCounterClientType] = useState('Turista Particular en Tienda');
   const [counterBuyerName, setCounterBuyerName] = useState('');
   const [counterBuyerPhone, setCounterBuyerPhone] = useState('');
   const [counterDestinationCity, setCounterDestinationCity] = useState(POPULAR_DESTINATIONS[0].city);
   const [counterDestinationAddress, setCounterDestinationAddress] = useState('');
   const [counterDeliveryType, setCounterDeliveryType] = useState('Domicilio'); // 'Domicilio' | 'Ocurre Oficina Castores'
-  const [counterItemsDescription, setCounterItemsDescription] = useState('Esferas artesanales de cristal soplado decoradas y empacadas');
+
+  // Contenido detallado del envío (Esferas de Chignahuapan)
+  const [counterContentCategory, setCounterContentCategory] = useState(SPHERE_CONTENT_CATEGORIES[0].label);
+  const [counterPiecesCount, setCounterPiecesCount] = useState(120);
+  const [counterFragilityLevel, setCounterFragilityLevel] = useState('Alta Fragilidad - Cristal Soplado Artesanal');
+  const [counterItemsDescription, setCounterItemsDescription] = useState('Esferas tradicionales sopladas al soplete con decorado navideño espiral');
   const [counterBoxesCount, setCounterBoxesCount] = useState(3);
   const [counterPackagingId, setCounterPackagingId] = useState('pack-premium');
   const [counterDeclaredValue, setCounterDeclaredValue] = useState(2500);
+
+  // =========================================================================
+  // ESTADOS DE SELECCIÓN DE CLIENTES PARA SALIDA A PUEBLA (MANIFIESTO)
+  // =========================================================================
+  const [selectedOrderIdsForManifest, setSelectedOrderIdsForManifest] = useState(() => {
+    const saved = localStorage.getItem('tribuna_manifest_selected_ids_v1');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    return agencyOrders.map(o => o.id);
+  });
+
+  const [manifestFilter, setManifestFilter] = useState('ALL'); // 'ALL' | 'SELECTED' | 'PENDING'
+  const [lastDispatchedInfo, setLastDispatchedInfo] = useState(null);
+
+  useEffect(() => {
+    localStorage.setItem('tribuna_manifest_selected_ids_v1', JSON.stringify(selectedOrderIdsForManifest));
+  }, [selectedOrderIdsForManifest]);
+
+  // Manejador para seleccionar cliente frecuente o comprador anterior
+  const handleSelectClientPreset = (presetId) => {
+    setCounterClientPresetId(presetId);
+    if (!presetId) {
+      return;
+    }
+    const foundPreset = REGISTERED_CLIENTS_PRESETS.find(p => p.id === presetId);
+    if (foundPreset) {
+      setCounterBuyerName(foundPreset.name);
+      setCounterBuyerPhone(foundPreset.phone);
+      setCounterDestinationCity(foundPreset.city);
+      setCounterDestinationAddress(foundPreset.address);
+      setCounterClientType(foundPreset.clientType);
+      return;
+    }
+    const pastOrder = agencyOrders.find(o => o.id === presetId);
+    if (pastOrder) {
+      setCounterBuyerName(pastOrder.buyerName);
+      setCounterBuyerPhone(pastOrder.buyerPhone);
+      setCounterDestinationCity(pastOrder.destinationCity);
+      setCounterDestinationAddress(pastOrder.destinationAddress);
+      setCounterClientType(pastOrder.clientType || 'Comprador Frecuente');
+    }
+  };
+
+  // Manejador para seleccionar categoría de producto navideño
+  const handleSelectContentCategory = (catLabel) => {
+    setCounterContentCategory(catLabel);
+    const cat = SPHERE_CONTENT_CATEGORIES.find(c => c.label === catLabel);
+    if (cat) {
+      setCounterFragilityLevel(cat.fragility);
+      setCounterPiecesCount(cat.defaultPiecesPerBox * counterBoxesCount);
+      if (!counterItemsDescription || counterItemsDescription.includes('Esferas tradicionales')) {
+        setCounterItemsDescription(cat.desc);
+      }
+    }
+  };
+
+  // Manejador para cambiar número de cajas con recalculo proporcional de piezas
+  const handleBoxesCountChange = (newCount) => {
+    const validCount = Math.max(1, parseInt(newCount) || 1);
+    setCounterBoxesCount(validCount);
+    const cat = SPHERE_CONTENT_CATEGORIES.find(c => c.label === counterContentCategory);
+    const perBox = cat ? cat.defaultPiecesPerBox : 40;
+    setCounterPiecesCount(validCount * perBox);
+  };
+
+  // Manejador para chips rápidos de contenido
+  const handleAppendQuickTag = (tag) => {
+    if (!counterItemsDescription || counterItemsDescription.trim() === '') {
+      setCounterItemsDescription(tag);
+    } else if (!counterItemsDescription.includes(tag)) {
+      setCounterItemsDescription(prev => `${prev}, ${tag}`);
+    }
+  };
+
+  // Manejadores para selección de clientes en el Manifiesto a Puebla
+  const handleToggleOrderSelection = (orderId) => {
+    setSelectedOrderIdsForManifest(prev => {
+      if (prev.includes(orderId)) {
+        return prev.filter(id => id !== orderId);
+      } else {
+        return [...prev, orderId];
+      }
+    });
+  };
+
+  const handleSelectAllOrders = () => {
+    setSelectedOrderIdsForManifest(agencyOrders.map(o => o.id));
+  };
+
+  const handleDeselectAllOrders = () => {
+    setSelectedOrderIdsForManifest([]);
+  };
+
+  const handleDispatchSelectedToPuebla = () => {
+    if (selectedOrderIdsForManifest.length === 0) {
+      alert('Por favor selecciona al menos un cliente / envío para despachar en la salida troncal.');
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `¿Confirmar salida troncal a Puebla para ${selectedOrderIdsForManifest.length} envíos seleccionados?\n\n` +
+      `Chofer asignado: ${shuttleConfig.assignedDriver}\n` +
+      `Unidad: ${shuttleConfig.assignedUnit}\n` +
+      `Horario: ${shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Inmediata'}`
+    );
+
+    if (!confirmed) return;
+
+    const departureTimestamp = new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' });
+
+    setAgencyOrders(prev => prev.map(ord => {
+      if (selectedOrderIdsForManifest.includes(ord.id)) {
+        return {
+          ...ord,
+          status: 'En Tránsito Troncal Chignahuapan → Puebla',
+          castoresStatus: `A bordo de ${shuttleConfig.assignedUnit} · Chofer: ${shuttleConfig.assignedDriver} · Salida: ${departureTimestamp} hrs`,
+          dispatchedAt: new Date().toISOString(),
+          assignedDriverForTrip: shuttleConfig.assignedDriver
+        };
+      }
+      return ord;
+    }));
+
+    setLastDispatchedInfo({
+      count: selectedOrderIdsForManifest.length,
+      time: departureTimestamp,
+      driver: shuttleConfig.assignedDriver,
+      unit: shuttleConfig.assignedUnit
+    });
+  };
 
   // =========================================================================
   // ESTADOS DEL FORMULARIO DE AUTO-REGISTRO DE PRODUCTORES / COMERCIOS
@@ -237,10 +389,15 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       clientNumber: selectedMerchant?.clientNumber || 'MOSTRADOR-DIRECTO',
       buyerName: counterBuyerName.trim(),
       buyerPhone: counterBuyerPhone.trim() || 'No proporcionado',
+      clientType: counterClientType,
       destinationCity: counterDestinationCity,
       destinationAddress: counterDestinationAddress.trim() || `Ocurre Oficina Castores ${counterDestinationCity}`,
       deliveryType: counterDeliveryType,
-      itemsSummary: `${counterBoxesCount} Cajas (${counterItemsDescription})`,
+      contentCategory: counterContentCategory,
+      piecesCount: Number(counterPiecesCount),
+      fragilityLevel: counterFragilityLevel,
+      itemsSummary: `${counterBoxesCount} Cajas (${counterPiecesCount} piezas · ${counterContentCategory} · ${counterItemsDescription})`,
+      contentDetails: counterItemsDescription,
       boxesCount: Number(counterBoxesCount),
       totalWeightKg: Number(counterBoxesCount) * 6,
       volumetricWeightKg: Number(counterBoxesCount) * 10,
@@ -256,14 +413,15 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       totalChargedToCustomer: counterPricing.totalToCustomer,
       pointsAwardedToMerchant: counterPricing.pointsEarned,
       status: 'Recibido en Bodega Hub Chignahuapan',
-      castoresStatus: 'Resguardado en bodega · Programado para salida troncal 18:30 hrs',
+      castoresStatus: `Resguardado en bodega · Programado para salida troncal a Puebla (${shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Horario Manual'})`,
       estimatedDeliveryDate: counterPricing.dest.avgDays === 1 ? 'Mañana' : `En ${counterPricing.dest.avgDays} días hábiles`,
       fragilityWarrantyActive: true,
       notes: `Recepción en mostrador de agencia Castores. Productor aliado: ${selectedMerchant?.businessName || 'N/A'}`
     };
 
-    // Actualizar pedidos
+    // Actualizar pedidos e incluir en manifiesto activo
     setAgencyOrders(prev => [newOrder, ...prev]);
+    setSelectedOrderIdsForManifest(prev => [newFolio, ...prev]);
 
     // Acreditar servicio y puntos al comerciante/productor si está afiliado
     if (selectedMerchant) {
@@ -710,13 +868,70 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </div>
 
               {/* PASO 2: DATOS DEL COMPRADOR / TURISTA DESTINATARIO */}
-              <div className="space-y-3">
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
-                  2. Datos del Comprador / Destinatario en Destino:
-                </span>
+              <div className="space-y-3.5 pt-2 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
+                    2. Cliente / Comprador que Usa el Servicio:
+                  </span>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    Puedes elegir un cliente registrado o capturar uno nuevo
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div>
+                {/* SELECTOR RÁPIDO DE CLIENTES REGISTRADOS / HABITUALES */}
+                <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <label className="text-[11px] font-bold text-slate-700 flex items-center space-x-1.5">
+                      <UserCheck className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>Elegir Cliente Frecuente / Registrado:</span>
+                    </label>
+                    {counterClientPresetId && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setCounterClientPresetId('');
+                          setCounterBuyerName('');
+                          setCounterBuyerPhone('');
+                          setCounterDestinationAddress('');
+                          setCounterClientType('Turista Particular en Tienda');
+                        }}
+                        className="text-[10px] text-rose-600 hover:underline font-bold"
+                      >
+                        Limpiar y nuevo cliente
+                      </button>
+                    )}
+                  </div>
+
+                  <select
+                    value={counterClientPresetId}
+                    onChange={(e) => handleSelectClientPreset(e.target.value)}
+                    className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
+                  >
+                    <option value="">-- ➕ Capturar Nuevo Comprador / Turista en Mostrador --</option>
+                    <optgroup label="⭐ Clientes Mayoristas & Boutiques Registradas">
+                      {REGISTERED_CLIENTS_PRESETS.map(p => (
+                        <option key={p.id} value={p.id}>
+                          {p.name} ({p.city} · {p.clientType})
+                        </option>
+                      ))}
+                    </optgroup>
+                    {agencyOrders.length > 0 && (
+                      <optgroup label="📋 Clientes con Envíos Previos en Bodega">
+                        {Array.from(new Set(agencyOrders.map(o => o.buyerName))).map((buyer, idx) => {
+                          const pastOrd = agencyOrders.find(o => o.buyerName === buyer);
+                          return (
+                            <option key={`past-${idx}`} value={pastOrd.id}>
+                              {buyer} ({pastOrd.destinationCity} · {pastOrd.clientType || 'Comprador Frecuente'})
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                    )}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="sm:col-span-2">
                     <label className="text-[11px] font-bold text-slate-700 block mb-1">Nombre Completo del Cliente:</label>
                     <input
                       type="text"
@@ -729,7 +944,23 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Celular / WhatsApp (Para Rastreo):</label>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Tipo de Cliente:</label>
+                    <select
+                      value={counterClientType}
+                      onChange={(e) => setCounterClientType(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:bg-white"
+                    >
+                      <option value="Turista Particular en Tienda">🛍️ Turista Particular en Tienda</option>
+                      <option value="Comprador Mayorista / Boutiques">🏢 Comprador Mayorista / Boutiques</option>
+                      <option value="Envío Directo del Productor">📦 Envío Directo del Productor</option>
+                      <option value="Despacho Corporativo / Interiorismo">🎨 Despacho de Interiorismo</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Celular / WhatsApp (Para Notificaciones de Rastreo):</label>
                     <input
                       type="tel"
                       value={counterBuyerPhone}
@@ -738,9 +969,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                     />
                   </div>
-                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
                     <label className="text-[11px] font-bold text-slate-700 block mb-1">Ciudad Destino en la República:</label>
                     <select
@@ -755,68 +984,108 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       ))}
                     </select>
                   </div>
+                </div>
 
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Tipo de Entrega:</label>
-                    <div className="grid grid-cols-2 gap-2">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Modalidad de Entrega:</label>
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
                         type="button"
                         onClick={() => setCounterDeliveryType('Domicilio')}
-                        className={`py-2 px-2 rounded-xl text-xs font-bold border text-center transition-all ${
+                        className={`py-2 px-1.5 rounded-xl text-xs font-bold border text-center transition-all ${
                           counterDeliveryType === 'Domicilio'
-                            ? 'bg-slate-900 text-white border-slate-900'
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                             : 'bg-slate-50 text-slate-700 border-slate-200'
                         }`}
                       >
-                        🏠 A Domicilio
+                        🏠 Domicilio
                       </button>
                       <button
                         type="button"
                         onClick={() => setCounterDeliveryType('Ocurre Oficina Castores')}
-                        className={`py-2 px-2 rounded-xl text-xs font-bold border text-center transition-all ${
+                        className={`py-2 px-1.5 rounded-xl text-xs font-bold border text-center transition-all ${
                           counterDeliveryType === 'Ocurre Oficina Castores'
-                            ? 'bg-slate-900 text-white border-slate-900'
+                            ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
                             : 'bg-slate-50 text-slate-700 border-slate-200'
                         }`}
                       >
-                        🏢 Ocurre Oficina
+                        🏢 Ocurre
                       </button>
                     </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Dirección de Entrega (Calle, Número, Colonia, C.P.):</label>
-                  <input
-                    type="text"
-                    value={counterDestinationAddress}
-                    onChange={(e) => setCounterDestinationAddress(e.target.value)}
-                    placeholder={counterDeliveryType === 'Domicilio' ? "Ej. Av. Constitución #450, Col. Obispado, C.P. 64060" : "Se entregará en la terminal Castores más cercana a la ciudad"}
-                    className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
-                  />
+                  <div className="sm:col-span-2">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Dirección de Entrega (Calle, Número, Colonia, C.P.):</label>
+                    <input
+                      type="text"
+                      value={counterDestinationAddress}
+                      onChange={(e) => setCounterDestinationAddress(e.target.value)}
+                      placeholder={counterDeliveryType === 'Domicilio' ? "Ej. Av. Constitución #450, Col. Obispado, C.P. 64060" : "Se entregará en la terminal Castores más cercana a la ciudad"}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
+                    />
+                  </div>
                 </div>
               </div>
 
-              {/* PASO 3: CAJAS Y EMBALAJE ANTISHOCK */}
-              <div className="space-y-3 pt-2 border-t border-slate-100">
-                <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
-                  3. Paquetes Recibidos & Protección Frágil:
-                </span>
+              {/* PASO 3: CAJAS, ESPECIFICACIÓN DE CONTENIDO & PROTECCIÓN FRÁGIL */}
+              <div className="space-y-4 pt-3 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
+                    3. ¿Qué Contiene el Envío? (Esferas & Artesanías de Cristal):
+                  </span>
+                  <span className="text-[11px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
+                    Inspección & Declaración Obligatoria Castores
+                  </span>
+                </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                {/* FILA 1: BULTOS, PIEZAS Y CATEGORÍA */}
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Número de Cajas:</label>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Cajas Recibidas:</label>
                     <input
                       type="number"
                       min="1"
-                      max="100"
+                      max="150"
                       value={counterBoxesCount}
-                      onChange={(e) => setCounterBoxesCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      onChange={(e) => handleBoxesCountChange(e.target.value)}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-black text-slate-900 focus:outline-none focus:bg-white"
                     />
                   </div>
 
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Piezas Totales de Esferas:</label>
+                    <input
+                      type="number"
+                      min="1"
+                      value={counterPiecesCount}
+                      onChange={(e) => setCounterPiecesCount(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="w-full px-3 py-2 bg-amber-50 border border-amber-300 rounded-xl text-xs font-black text-amber-950 focus:outline-none focus:bg-white"
+                    />
+                    <span className="text-[10px] text-slate-400 block mt-0.5">
+                      ~{Math.round(counterPiecesCount / counterBoxesCount)} pzas por caja
+                    </span>
+                  </div>
+
                   <div className="sm:col-span-2">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Categoría Principal de Producto:</label>
+                    <select
+                      value={counterContentCategory}
+                      onChange={(e) => handleSelectContentCategory(e.target.value)}
+                      className="w-full px-3 py-2 bg-white border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
+                    >
+                      {SPHERE_CONTENT_CATEGORIES.map(c => (
+                        <option key={c.id} value={c.label}>
+                          {c.label} (~{c.defaultPiecesPerBox} pzas/caja)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* FILA 2: EMBALAJE Y NIVEL DE FRAGILIDAD */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
                     <label className="text-[11px] font-bold text-slate-700 block mb-1">Tipo de Embalaje Frágil:</label>
                     <select
                       value={counterPackagingId}
@@ -830,17 +1099,75 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       ))}
                     </select>
                   </div>
+
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Nivel de Fragilidad & Manejo:</label>
+                    <select
+                      value={counterFragilityLevel}
+                      onChange={(e) => setCounterFragilityLevel(e.target.value)}
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white"
+                    >
+                      <option value="Alta Fragilidad - Cristal Soplado Artesanal">💎 Alta Fragilidad - Cristal Soplado Artesanal</option>
+                      <option value="Extrema Fragilidad - Arte Manual al Óleo">🎨 Extrema Fragilidad - Arte Manual al Óleo</option>
+                      <option value="Alta Fragilidad + Componente Electrónico">💡 Alta Fragilidad + Componente Electrónico / LED</option>
+                      <option value="Media Fragilidad - Estructura Rígida de Herrería">🛡️ Media Fragilidad - Herrería y Cristal Mixto</option>
+                    </select>
+                  </div>
                 </div>
 
+                {/* FILA 3: CHIPS RÁPIDOS PARA AGREGAR ACABADOS Y MODELOS */}
+                <div className="space-y-1.5">
+                  <span className="text-[11px] font-bold text-slate-600 block">
+                    Etiquetas Rápidas de Modelos y Acabados (Click para agregar al detalle):
+                  </span>
+                  <div className="flex flex-wrap gap-1.5">
+                    {CONTENT_QUICK_TAGS.map(tag => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => handleAppendQuickTag(tag)}
+                        className="text-[11px] font-semibold bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-800 border border-slate-200 hover:border-emerald-300 px-2.5 py-1 rounded-lg transition-all shadow-sm active:scale-95"
+                      >
+                        + {tag}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* FILA 4: TEXTO DETALLADO DEL CONTENIDO */}
                 <div>
-                  <label className="text-[11px] font-bold text-slate-700 block mb-1">Descripción del Contenido:</label>
+                  <label className="text-[11px] font-bold text-slate-700 block mb-1">
+                    Descripción Específica del Contenido (Modelos, Colores, Calibres):
+                  </label>
                   <input
                     type="text"
+                    required
                     value={counterItemsDescription}
                     onChange={(e) => setCounterItemsDescription(e.target.value)}
-                    placeholder="Ej. 3 Cajas con 150 esferas decoradas al óleo y 2 coronas de herrería"
+                    placeholder="Ej. Esferas clásicas N°6 espiral rubí y oro, figuras con escarcha blanca y campanas de cristal"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                   />
+                </div>
+
+                {/* TARJETA RESUMEN EN VIVO DE INSPECCIÓN DE CONTENIDO */}
+                <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3.5 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+                  <div className="space-y-0.5">
+                    <span className="text-[10px] uppercase font-black text-emerald-800 tracking-wider block">
+                      🔮 Resumen de Contenido Declarado:
+                    </span>
+                    <p className="font-bold text-slate-900">
+                      {counterBoxesCount} {counterBoxesCount === 1 ? 'Caja' : 'Cajas'} · <span className="text-emerald-700 font-black">{counterPiecesCount} Esferas en Total</span> ({counterContentCategory})
+                    </p>
+                    <p className="text-[11px] text-slate-600 truncate max-w-md">
+                      Detalle: {counterItemsDescription}
+                    </p>
+                  </div>
+                  <div className="text-left sm:text-right shrink-0">
+                    <span className="text-[10px] text-slate-500 uppercase font-bold block">Protección Asignada:</span>
+                    <span className="font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full text-[10px] inline-block border border-amber-300">
+                      {counterFragilityLevel}
+                    </span>
+                  </div>
                 </div>
               </div>
 
@@ -1715,122 +2042,372 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       {/* ========================================================================= */}
       {/* ÁREA 5: MANIFIESTO DE SALIDA A TERMINAL PUEBLA (CONFIGURABLE MANUALMENTE) */}
       {/* ========================================================================= */}
-      {activeSubTab === 'manifest' && (
-        <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-sm space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
-            <div>
-              <div className="flex items-center space-x-2">
-                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase">
-                  Conexión Troncal Chignahuapan → Puebla
-                </span>
-                <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
-                  {shuttleConfig.statusText || 'Salida Manual'}
-                </span>
+      {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* ÁREA 5: MANIFIESTO DE SALIDA A PUEBLA & SELECCIÓN DE CLIENTES Y CONTENIDO */}
+      {/* ========================================================================= */}
+      {activeSubTab === 'manifest' && (() => {
+        const selectedOrders = agencyOrders.filter(o => selectedOrderIdsForManifest.includes(o.id));
+        const totalSelectedBoxes = selectedOrders.reduce((sum, o) => sum + (o.boxesCount || 0), 0);
+        const totalSelectedPieces = selectedOrders.reduce((sum, o) => sum + (o.piecesCount || (o.boxesCount * 40)), 0);
+        const totalSelectedWeight = selectedOrders.reduce((sum, o) => sum + (o.totalWeightKg || (o.boxesCount * 6)), 0);
+
+        const displayedOrders = manifestFilter === 'SELECTED' 
+          ? selectedOrders 
+          : manifestFilter === 'PENDING'
+            ? agencyOrders.filter(o => !selectedOrderIdsForManifest.includes(o.id))
+            : agencyOrders;
+
+        const isAllSelected = agencyOrders.length > 0 && selectedOrderIdsForManifest.length === agencyOrders.length;
+
+        return (
+          <div className="bg-white rounded-3xl p-5 sm:p-7 border border-slate-200 shadow-sm space-y-6">
+            
+            {/* ENCABEZADO DEL MANIFIESTO & BOTONES PRINCIPALES */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <span className="bg-emerald-100 text-emerald-800 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wide">
+                    Troncal Castores Chignahuapan → Puebla
+                  </span>
+                  <span className="bg-amber-100 text-amber-900 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                    {shuttleConfig.statusText || 'Salida Manual'}
+                  </span>
+                </div>
+                <h2 className="text-xl font-black text-slate-900 mt-1">
+                  Manifiesto de Carga: Salida a Puebla ({shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Horario Manual'})
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Selecciona qué clientes y envíos viajan en esta unidad. Chofer: <strong>{shuttleConfig.assignedDriver}</strong> · Unidad: <strong>{shuttleConfig.assignedUnit}</strong>
+                </p>
               </div>
-              <h2 className="text-xl font-black text-slate-900 mt-1">
-                Manifiesto de Carga: Salida a Puebla ({shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Horario Manual'})
-              </h2>
-              <p className="text-xs text-slate-500">
-                Frecuencia: <strong>{shuttleConfig.departureFrequencyText}</strong> · Chofer: <strong>{shuttleConfig.assignedDriver}</strong> · Unidad: <strong>{shuttleConfig.assignedUnit}</strong>
-              </p>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTempShuttleConfig({ ...shuttleConfig });
+                    setIsShuttleModalOpen(true);
+                  }}
+                  className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm transition-all"
+                  title="Configurar horario, frecuencia o salida manualmente"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  <span>Configurar Horario</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Imprimir Manifiesto</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDispatchSelectedToPuebla}
+                  disabled={selectedOrderIdsForManifest.length === 0}
+                  className={`font-black px-4 py-2 rounded-xl text-xs flex items-center space-x-2 shadow-md transition-all ${
+                    selectedOrderIdsForManifest.length > 0
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white active:scale-95'
+                      : 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                  }`}
+                >
+                  <Truck className="w-4 h-4" />
+                  <span>Despachar {selectedOrderIdsForManifest.length} Envíos a Puebla</span>
+                </button>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={() => {
-                  setTempShuttleConfig({ ...shuttleConfig });
-                  setIsShuttleModalOpen(true);
-                }}
-                className="bg-amber-400 hover:bg-amber-300 text-slate-950 font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm transition-all"
-                title="Configurar horario, frecuencia o salida por volumen manualmente"
-              >
-                <Settings className="w-4 h-4" />
-                <span>Configurar Salida</span>
-              </button>
+            {/* BANNER DE NOTIFICACIÓN DE ÚLTIMO DESPACHO */}
+            {lastDispatchedInfo && (
+              <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 flex items-center justify-between text-xs animate-in fade-in">
+                <div className="flex items-center space-x-2.5">
+                  <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                  <div>
+                    <span className="font-black text-emerald-900 block text-sm">
+                      ¡Salida Troncal Despachada Exitosamente a las {lastDispatchedInfo.time} hrs!
+                    </span>
+                    <span className="text-emerald-800">
+                      <strong>{lastDispatchedInfo.count} envíos de clientes</strong> fueron cargados en la unidad <strong>{lastDispatchedInfo.unit}</strong> a cargo del chofer <strong>{lastDispatchedInfo.driver}</strong> rumbo a la Terminal Castores Puebla.
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setLastDispatchedInfo(null)}
+                  className="text-emerald-700 hover:text-emerald-900 font-bold px-2 py-1 text-xs"
+                >
+                  ✕ Cerrar
+                </button>
+              </div>
+            )}
+
+            {/* TARJETAS KPI DE LA SALIDA SELECCIONADA */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+              <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-0.5">
+                <span className="text-slate-400 font-bold uppercase text-[10px] block">Clientes Seleccionados:</span>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-xl font-black text-slate-900">{selectedOrderIdsForManifest.length}</span>
+                  <span className="text-slate-500 text-[11px]">de {agencyOrders.length} en bodega</span>
+                </div>
+              </div>
+
+              <div className="bg-amber-50/70 p-3.5 rounded-2xl border border-amber-200 space-y-0.5">
+                <span className="text-amber-800 font-bold uppercase text-[10px] block">Cajas a Cargar:</span>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-xl font-black text-amber-900">{totalSelectedBoxes}</span>
+                  <span className="text-amber-700 text-[11px]">cajas antishock</span>
+                </div>
+              </div>
+
+              <div className="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-200 space-y-0.5">
+                <span className="text-emerald-800 font-bold uppercase text-[10px] block">Piezas de Esferas Totales:</span>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-xl font-black text-emerald-900">{totalSelectedPieces.toLocaleString()}</span>
+                  <span className="text-emerald-700 text-[11px]">esferas protegidas</span>
+                </div>
+              </div>
+
+              <div className="bg-sky-50/70 p-3.5 rounded-2xl border border-sky-200 space-y-0.5">
+                <span className="text-sky-800 font-bold uppercase text-[10px] block">Peso de Carga Troncal:</span>
+                <div className="flex items-baseline space-x-1.5">
+                  <span className="text-xl font-black text-sky-900">{totalSelectedWeight} kg</span>
+                  <span className="text-sky-700 text-[11px]">/ 3,500 kg capacidad</span>
+                </div>
+              </div>
+            </div>
+
+            {/* BARRA DE FILTROS & CONTROLES DE SELECCIÓN DE CLIENTES */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-slate-50 p-3 rounded-2xl border border-slate-200">
+              {/* Botones de Filtro */}
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => setManifestFilter('ALL')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    manifestFilter === 'ALL'
+                      ? 'bg-slate-900 text-white shadow-sm'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  Todos en Bodega ({agencyOrders.length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setManifestFilter('SELECTED')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    manifestFilter === 'SELECTED'
+                      ? 'bg-emerald-700 text-white shadow-sm'
+                      : 'bg-white text-emerald-800 border border-emerald-200 hover:bg-emerald-50'
+                  }`}
+                >
+                  Seleccionados para esta Salida ({selectedOrderIdsForManifest.length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setManifestFilter('PENDING')}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    manifestFilter === 'PENDING'
+                      ? 'bg-amber-600 text-white shadow-sm'
+                      : 'bg-white text-amber-900 border border-amber-200 hover:bg-amber-50'
+                  }`}
+                >
+                  En Resguardo ({agencyOrders.length - selectedOrderIdsForManifest.length})
+                </button>
+              </div>
+
+              {/* Botones rápidos de selección */}
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSelectAllOrders}
+                  className="bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold px-2.5 py-1.5 rounded-xl text-xs flex items-center space-x-1"
+                >
+                  <CheckSquare className="w-3.5 h-3.5 text-emerald-600" />
+                  <span>Seleccionar Todos</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleDeselectAllOrders}
+                  className="bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 font-bold px-2.5 py-1.5 rounded-xl text-xs flex items-center space-x-1"
+                >
+                  <Square className="w-3.5 h-3.5 text-slate-400" />
+                  <span>Desmarcar Todos</span>
+                </button>
+              </div>
+            </div>
+
+            {/* TABLA PRINCIPAL DEL MANIFIESTO */}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-100 text-slate-700 font-black uppercase text-[10px] border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-3 text-center w-12">
+                      <input
+                        type="checkbox"
+                        checked={isAllSelected}
+                        onChange={(e) => {
+                          if (e.target.checked) handleSelectAllOrders();
+                          else handleDeselectAllOrders();
+                        }}
+                        className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                        title="Seleccionar o desmarcar todos"
+                      />
+                    </th>
+                    <th className="py-3 px-3">Folio & Guía</th>
+                    <th className="py-3 px-3">Cliente / Destinatario & Origen</th>
+                    <th className="py-3 px-3">Contenido Detallado de Esferas</th>
+                    <th className="py-3 px-3">Bultos & Embalaje</th>
+                    <th className="py-3 px-3 text-center">Estado para este Viaje</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 bg-white">
+                  {displayedOrders.map(ord => {
+                    const isSelected = selectedOrderIdsForManifest.includes(ord.id);
+                    const pieces = ord.piecesCount || (ord.boxesCount * 40);
+
+                    return (
+                      <tr 
+                        key={ord.id} 
+                        className={`transition-colors cursor-pointer ${
+                          isSelected ? 'bg-emerald-50/30 hover:bg-emerald-50/50' : 'hover:bg-slate-50 opacity-80'
+                        }`}
+                        onClick={() => handleToggleOrderSelection(ord.id)}
+                      >
+                        {/* Checkbox de Selección */}
+                        <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => handleToggleOrderSelection(ord.id)}
+                            className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                          />
+                        </td>
+
+                        {/* Folio y Guía Castores */}
+                        <td className="py-3.5 px-3 font-mono font-bold text-slate-800">
+                          <div className="font-black text-slate-900">{ord.id}</div>
+                          <div className="mt-1">
+                            <span className="font-black text-amber-900 bg-amber-100 px-2 py-0.5 rounded-md border border-amber-300 text-[11px]">
+                              {ord.castoresGuideNumber}
+                            </span>
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-1">{ord.date}</div>
+                        </td>
+
+                        {/* Cliente Destinatario & Taller de Origen */}
+                        <td className="py-3.5 px-3">
+                          <div className="flex items-center space-x-1.5">
+                            <span className="font-black text-slate-900 text-sm">{ord.buyerName}</span>
+                            {ord.clientType && (
+                              <span className="bg-slate-100 text-slate-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                {ord.clientType}
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-slate-600 text-xs font-semibold mt-0.5">
+                            📍 {ord.destinationCity} {ord.deliveryType ? `(${ord.deliveryType})` : ''}
+                          </div>
+                          <div className="text-[11px] text-slate-500 mt-1 flex items-center space-x-1">
+                            <span className="font-bold text-emerald-800">Taller:</span>
+                            <span>{ord.artisanBusiness}</span>
+                            <span className="text-slate-400 font-mono">({ord.clientNumber || 'Directo'})</span>
+                          </div>
+                          {ord.buyerPhone && ord.buyerPhone !== 'No proporcionado' && (
+                            <div className="text-[10px] text-slate-400 mt-0.5">
+                              📞 {ord.buyerPhone}
+                            </div>
+                          )}
+                        </td>
+
+                        {/* Contenido Detallado de Esferas */}
+                        <td className="py-3.5 px-3 max-w-xs">
+                          <div className="flex flex-wrap items-center gap-1 mb-1">
+                            <span className="bg-amber-100 text-amber-950 font-black px-2 py-0.5 rounded-md text-[10px] border border-amber-200">
+                              {ord.contentCategory || '🔮 Esferas Tradicionales'}
+                            </span>
+                            <span className="bg-emerald-100 text-emerald-900 font-black px-2 py-0.5 rounded-md text-[10px] border border-emerald-300">
+                              {pieces.toLocaleString()} Piezas
+                            </span>
+                          </div>
+                          <p className="text-xs text-slate-800 font-medium line-clamp-2 leading-relaxed">
+                            {ord.contentDetails || ord.itemsSummary}
+                          </p>
+                          <div className="mt-1">
+                            <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block">
+                              {ord.fragilityLevel || 'Alta Fragilidad'}
+                            </span>
+                          </div>
+                        </td>
+
+                        {/* Bultos & Embalaje */}
+                        <td className="py-3.5 px-3">
+                          <div className="font-black text-slate-900 text-sm">
+                            {ord.boxesCount} {ord.boxesCount === 1 ? 'Caja' : 'Cajas'}
+                          </div>
+                          <div className="text-[11px] text-slate-600 mt-0.5">
+                            {ord.packagingName}
+                          </div>
+                          <div className="text-[10px] text-slate-400 mt-0.5">
+                            ~{ord.totalWeightKg || (ord.boxesCount * 6)} kg totales
+                          </div>
+                        </td>
+
+                        {/* Estado para este Viaje */}
+                        <td className="py-3.5 px-3 text-center">
+                          {isSelected ? (
+                            <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-black px-2.5 py-1 rounded-full text-[10px] inline-flex items-center space-x-1 shadow-xs">
+                              <span>🚚</span>
+                              <span>A bordo p/ Puebla</span>
+                            </span>
+                          ) : (
+                            <span className="bg-slate-100 text-slate-500 font-bold px-2.5 py-1 rounded-full text-[10px] inline-flex items-center space-x-1">
+                              <span>⏳</span>
+                              <span>En Resguardo Bodega</span>
+                            </span>
+                          )}
+                          <div className="text-[10px] text-slate-400 mt-1">
+                            {ord.status === 'En Tránsito Troncal Chignahuapan → Puebla' ? 'Despachado' : 'Listo para Carga'}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* SECCIÓN IMPRIMIBLE PARA EL CHOFER (MANIFIESTO OFICIAL CON HOJA DE RUTA) */}
+            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="space-y-0.5">
+                <span className="font-black text-slate-900 text-sm flex items-center space-x-1.5">
+                  <FileText className="w-4 h-4 text-emerald-700" />
+                  <span>Hoja de Ruta Oficial & Manifiesto para el Operador de la Van</span>
+                </span>
+                <p className="text-slate-500 text-[11px]">
+                  Al presionar "Imprimir Manifiesto", se generará la hoja de embarque exclusiva con los <strong>{selectedOrderIdsForManifest.length} clientes seleccionados</strong>, número de cajas, piezas declaradas e inventario de cristal frágil para inspección en autopista y entrega en la Terminal Castores Puebla.
+                </p>
+              </div>
 
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shrink-0 shadow-sm"
               >
                 <Printer className="w-4 h-4" />
-                <span>Imprimir Manifiesto</span>
+                <span>Imprimir Hoja de Ruta ({selectedOrderIdsForManifest.length} Envíos)</span>
               </button>
             </div>
-          </div>
 
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-xs flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <span className="text-slate-400 block font-bold">Ruta Troncal:</span>
-              <span className="font-black text-slate-900 text-sm">Bodega Chignahuapan ➔ Terminal Castores Puebla</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block font-bold">Hora Salida Establecida:</span>
-              <span className="font-black text-amber-700 text-sm">{shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Sujeto a volumen'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block font-bold">Hora Límite de Recepción:</span>
-              <span className="font-black text-slate-900 text-sm">{shuttleConfig.cutoffTime ? `${shuttleConfig.cutoffTime} hrs` : 'Flexible'}</span>
-            </div>
-            <div>
-              <span className="text-slate-400 block font-bold">Total Paquetes a Bordo:</span>
-              <span className="font-black text-emerald-700 text-sm">{agencyOrders.length} envíos documentados</span>
-            </div>
           </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
-              <thead className="bg-slate-100 text-slate-600 font-bold uppercase text-[10px] border-b border-slate-200">
-                <tr>
-                  <th className="py-2.5 px-3">Folio & Fecha</th>
-                  <th className="py-2.5 px-3">Guía Castores</th>
-                  <th className="py-2.5 px-3">Taller de Origen</th>
-                  <th className="py-2.5 px-3">Destinatario & Ciudad</th>
-                  <th className="py-2.5 px-3">Bultos</th>
-                  <th className="py-2.5 px-3">Embalaje</th>
-                  <th className="py-2.5 px-3">Estado</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-100">
-                {agencyOrders.map(ord => (
-                  <tr key={ord.id} className="hover:bg-slate-50 transition-colors">
-                    <td className="py-3 px-3 font-mono font-bold text-slate-800">
-                      <div>{ord.id}</div>
-                      <div className="text-[10px] text-slate-400">{ord.date}</div>
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="font-black text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
-                        {ord.castoresGuideNumber}
-                      </span>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">{ord.artisanBusiness}</div>
-                      <div className="text-[10px] text-slate-400">{ord.clientNumber || 'Directo'}</div>
-                    </td>
-                    <td className="py-3 px-3">
-                      <div className="font-bold text-slate-900">{ord.buyerName}</div>
-                      <div className="text-slate-500 text-[11px]">{ord.destinationCity}</div>
-                    </td>
-                    <td className="py-3 px-3 font-semibold text-slate-800">
-                      {ord.boxesCount} cajas
-                    </td>
-                    <td className="py-3 px-3 text-slate-600">
-                      {ord.packagingName}
-                    </td>
-                    <td className="py-3 px-3">
-                      <span className="bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full text-[10px]">
-                        Listo p/ Cargar
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-
-        </div>
-      )}
+        );
+      })()}
 
       {/* ========================================================================= */}
       {/* MODAL: TICKET DE RECEPCIÓN / COMPROBANTE DE DESPACHO */}
@@ -1870,20 +2447,50 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
 
             <div className="space-y-2 text-xs">
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Comprador:</span>
-                <span className="font-bold text-slate-900">{selectedReceiptOrder.buyerName}</span>
+                <span className="text-slate-500">Cliente / Destinatario:</span>
+                <span className="font-bold text-slate-900 text-right">
+                  {selectedReceiptOrder.buyerName}
+                  {selectedReceiptOrder.clientType && (
+                    <span className="text-[10px] text-slate-400 block font-normal">
+                      {selectedReceiptOrder.clientType}
+                    </span>
+                  )}
+                </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Destino:</span>
                 <span className="font-bold text-slate-900">{selectedReceiptOrder.destinationCity}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Taller Afiliado:</span>
+                <span className="text-slate-500">Taller de Origen:</span>
                 <span className="font-bold text-emerald-700">{selectedReceiptOrder.artisanBusiness}</span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
-                <span className="text-slate-500">Total Cajas:</span>
-                <span className="font-bold text-slate-900">{selectedReceiptOrder.boxesCount} cajas</span>
+                <span className="text-slate-500">Bultos & Embalaje:</span>
+                <span className="font-bold text-slate-900">
+                  {selectedReceiptOrder.boxesCount} {selectedReceiptOrder.boxesCount === 1 ? 'caja' : 'cajas'} · {selectedReceiptOrder.packagingName}
+                </span>
+              </div>
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Contenido Declarado:</span>
+                <span className="font-black text-amber-900 text-right">
+                  {selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40)} Esferas
+                  <span className="text-[10px] text-slate-500 block font-normal">
+                    {selectedReceiptOrder.contentCategory || 'Esferas Tradicionales'}
+                  </span>
+                </span>
+              </div>
+              {selectedReceiptOrder.contentDetails && (
+                <div className="py-1 border-b border-slate-100 text-[11px] text-slate-600">
+                  <span className="font-bold text-slate-500 block">Detalle de Modelos:</span>
+                  <span className="font-medium">{selectedReceiptOrder.contentDetails}</span>
+                </div>
+              )}
+              <div className="flex justify-between py-1 border-b border-slate-100">
+                <span className="text-slate-500">Protección & Fragilidad:</span>
+                <span className="font-bold text-slate-800 text-[11px]">
+                  {selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}
+                </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Total Cobrado:</span>
@@ -1899,9 +2506,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <button
                 type="button"
                 onClick={() => {
-                  const text = `🎄 *AGENCIA CASTORES CHIGNAHUAPAN*\n¡Hola ${selectedReceiptOrder.buyerName}! Tu paquete de ${selectedReceiptOrder.boxesCount} cajas de esferas ha sido recibido en nuestra Bodega Hub.\n*Guía Castores:* ${selectedReceiptOrder.castoresGuideNumber}\n*Destino:* ${selectedReceiptOrder.destinationCity}\n*Estatus:* Resguardado para salida troncal a terminal Puebla.\n¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
+                  const pieces = selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40);
+                  const cat = selectedReceiptOrder.contentCategory || 'Esferas Tradicionales';
+                  const text = `🎄 *AGENCIA CASTORES CHIGNAHUAPAN*\n` +
+                    `¡Hola ${selectedReceiptOrder.buyerName}! Tu envío de esferas ha sido recibido e inspeccionado en nuestra Bodega Hub.\n\n` +
+                    `📋 *Guía Oficial Castores:* ${selectedReceiptOrder.castoresGuideNumber}\n` +
+                    `📍 *Destino:* ${selectedReceiptOrder.destinationCity}\n` +
+                    `📦 *Bultos:* ${selectedReceiptOrder.boxesCount} cajas (${selectedReceiptOrder.packagingName})\n` +
+                    `🔮 *Contenido:* ${pieces} esferas (${cat})\n` +
+                    `🛡️ *Fragilidad:* ${selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}\n` +
+                    `🚚 *Estatus:* ${selectedReceiptOrder.castoresStatus}\n\n` +
+                    `¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
                   navigator.clipboard.writeText(text);
-                  alert('📋 ¡Notificación para el comprador copiada! Listo para enviar por WhatsApp.');
+                  alert('📋 ¡Notificación detallada para el comprador copiada! Listo para enviar por WhatsApp.');
                 }}
                 className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1"
               >
