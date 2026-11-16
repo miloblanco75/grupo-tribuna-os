@@ -127,6 +127,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   const [isNewMerchantModalOpen, setIsNewMerchantModalOpen] = useState(false);
   const [selectedMerchantDetail, setSelectedMerchantDetail] = useState(null);
   const [selectedReceiptOrder, setSelectedReceiptOrder] = useState(null);
+  const [selectedLabelOrder, setSelectedLabelOrder] = useState(null);
+  const [selectedBoxIndexForLabel, setSelectedBoxIndexForLabel] = useState('ALL');
   const [isRedeemModalOpen, setIsRedeemModalOpen] = useState(false);
   const [rewardToRedeem, setRewardToRedeem] = useState(null);
 
@@ -2359,8 +2361,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           </div>
                         </td>
 
-                        {/* Estado para este Viaje */}
-                        <td className="py-3.5 px-3 text-center">
+                        {/* Estado para este Viaje & Acción Sticker */}
+                        <td className="py-3.5 px-3 text-center" onClick={(e) => e.stopPropagation()}>
                           {isSelected ? (
                             <span className="bg-emerald-100 text-emerald-900 border border-emerald-300 font-black px-2.5 py-1 rounded-full text-[10px] inline-flex items-center space-x-1 shadow-xs">
                               <span>🚚</span>
@@ -2375,6 +2377,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           <div className="text-[10px] text-slate-400 mt-1">
                             {ord.status === 'En Tránsito Troncal Chignahuapan → Puebla' ? 'Despachado' : 'Listo para Carga'}
                           </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setSelectedLabelOrder(ord);
+                              setSelectedBoxIndexForLabel('ALL');
+                            }}
+                            className="mt-1.5 w-full bg-amber-100 hover:bg-amber-200 text-amber-950 font-black px-2 py-1 rounded-lg text-[10px] flex items-center justify-center space-x-1 border border-amber-300 shadow-xs transition-all"
+                            title="Generar e imprimir etiquetas adhesivas para las cajas"
+                          >
+                            <Tag className="w-3 h-3 text-amber-800" />
+                            <span>Stickers ({ord.boxesCount})</span>
+                          </button>
                         </td>
                       </tr>
                     );
@@ -2502,38 +2517,52 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </div>
             </div>
 
-            <div className="pt-2 flex gap-2">
+            <div className="pt-2 space-y-2">
               <button
                 type="button"
                 onClick={() => {
-                  const pieces = selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40);
-                  const cat = selectedReceiptOrder.contentCategory || 'Esferas Tradicionales';
-                  const text = `🎄 *AGENCIA CASTORES CHIGNAHUAPAN*\n` +
-                    `¡Hola ${selectedReceiptOrder.buyerName}! Tu envío de esferas ha sido recibido e inspeccionado en nuestra Bodega Hub.\n\n` +
-                    `📋 *Guía Oficial Castores:* ${selectedReceiptOrder.castoresGuideNumber}\n` +
-                    `📍 *Destino:* ${selectedReceiptOrder.destinationCity}\n` +
-                    `📦 *Bultos:* ${selectedReceiptOrder.boxesCount} cajas (${selectedReceiptOrder.packagingName})\n` +
-                    `🔮 *Contenido:* ${pieces} esferas (${cat})\n` +
-                    `🛡️ *Fragilidad:* ${selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}\n` +
-                    `🚚 *Estatus:* ${selectedReceiptOrder.castoresStatus}\n\n` +
-                    `¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
-                  navigator.clipboard.writeText(text);
-                  alert('📋 ¡Notificación detallada para el comprador copiada! Listo para enviar por WhatsApp.');
+                  setSelectedLabelOrder(selectedReceiptOrder);
+                  setSelectedBoxIndexForLabel('ALL');
                 }}
-                className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1"
+                className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition-all active:scale-95"
               >
-                <Share2 className="w-3.5 h-3.5" />
-                <span>WhatsApp Comprador</span>
+                <Tag className="w-4 h-4 text-slate-950" />
+                <span>Imprimir Etiquetas Adhesivas ({selectedReceiptOrder.boxesCount} Stickers para Cajas)</span>
               </button>
 
-              <button
-                type="button"
-                onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Imprimir</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pieces = selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40);
+                    const cat = selectedReceiptOrder.contentCategory || 'Esferas Tradicionales';
+                    const text = `🎄 *AGENCIA CASTORES CHIGNAHUAPAN*\n` +
+                      `¡Hola ${selectedReceiptOrder.buyerName}! Tu envío de esferas ha sido recibido e inspeccionado en nuestra Bodega Hub.\n\n` +
+                      `📋 *Guía Oficial Castores:* ${selectedReceiptOrder.castoresGuideNumber}\n` +
+                      `📍 *Destino:* ${selectedReceiptOrder.destinationCity}\n` +
+                      `📦 *Bultos:* ${selectedReceiptOrder.boxesCount} cajas (${selectedReceiptOrder.packagingName})\n` +
+                      `🔮 *Contenido:* ${pieces} esferas (${cat})\n` +
+                      `🛡️ *Fragilidad:* ${selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}\n` +
+                      `🚚 *Estatus:* ${selectedReceiptOrder.castoresStatus}\n\n` +
+                      `¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
+                    navigator.clipboard.writeText(text);
+                    alert('📋 ¡Notificación detallada para el comprador copiada! Listo para enviar por WhatsApp.');
+                  }}
+                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1"
+                >
+                  <Share2 className="w-3.5 h-3.5" />
+                  <span>WhatsApp Comprador</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-bold px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Imprimir Ticket</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -2739,6 +2768,274 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ========================================================================= */}
+      {/* MODAL: GENERADOR DE ETIQUETAS ADHESIVAS / STICKERS DE CAJA (CASTORES) */}
+      {/* ========================================================================= */}
+      {selectedLabelOrder && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
+          onClick={() => setSelectedLabelOrder(null)}
+        >
+          <div 
+            className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 space-y-5 shadow-2xl border border-slate-200 max-h-[95vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* ENCABEZADO DEL MODAL */}
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+              <div className="flex items-center space-x-2">
+                <div className="p-2 bg-amber-100 rounded-xl text-amber-900">
+                  <Tag className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900 leading-tight">
+                    Stickers de Embarque & Identificación de Cajas
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Guía Castores: <strong className="text-slate-900 font-mono">{selectedLabelOrder.castoresGuideNumber}</strong> · {selectedLabelOrder.boxesCount} {selectedLabelOrder.boxesCount === 1 ? 'Caja' : 'Cajas'}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <button
+                  type="button"
+                  onClick={() => window.print()}
+                  className="bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all"
+                >
+                  <Printer className="w-3.5 h-3.5" />
+                  <span>Imprimir Stickers</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedLabelOrder(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* SELECTOR DE CAJA INDIVIDUAL O TODAS LAS CAJAS */}
+            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+              <span className="font-bold text-slate-700">Ver e Imprimir:</span>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  type="button"
+                  onClick={() => setSelectedBoxIndexForLabel('ALL')}
+                  className={`px-3 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                    selectedBoxIndexForLabel === 'ALL'
+                      ? 'bg-slate-900 text-white shadow-xs'
+                      : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  Todas las Cajas (1 a {selectedLabelOrder.boxesCount})
+                </button>
+                {Array.from({ length: selectedLabelOrder.boxesCount }, (_, i) => i + 1).map((boxNum) => (
+                  <button
+                    key={`btn-box-${boxNum}`}
+                    type="button"
+                    onClick={() => setSelectedBoxIndexForLabel(boxNum)}
+                    className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-all ${
+                      selectedBoxIndexForLabel === boxNum
+                        ? 'bg-amber-400 text-slate-950 shadow-xs'
+                        : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
+                    }`}
+                  >
+                    Caja {boxNum}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* CONTENEDOR DE ETIQUETAS ADHESIVAS (ESTILO INDUSTRIAL 4x6 / 10x15 CM) */}
+            <div className="space-y-6">
+              {(selectedBoxIndexForLabel === 'ALL'
+                ? Array.from({ length: selectedLabelOrder.boxesCount }, (_, i) => i + 1)
+                : [selectedBoxIndexForLabel]
+              ).map((boxNum) => {
+                const totalPieces = selectedLabelOrder.piecesCount || (selectedLabelOrder.boxesCount * 40);
+                const piecesInThisBox = Math.round(totalPieces / selectedLabelOrder.boxesCount);
+
+                return (
+                  <div
+                    key={`label-box-${boxNum}`}
+                    className="border-2 border-slate-950 rounded-2xl p-5 bg-white shadow-md space-y-3 font-sans print:border-black print:shadow-none print:break-after-page"
+                  >
+                    {/* ENCABEZADO DE TRANSPORTISTA Y HUB */}
+                    <div className="flex items-center justify-between border-b-2 border-slate-950 pb-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="bg-slate-950 text-white font-black text-xs px-2.5 py-1 rounded">
+                          CASTORES
+                        </div>
+                        <div>
+                          <span className="font-black text-slate-950 text-xs tracking-wider block leading-none">
+                            ALIANZA GRUPO TRIBUNA
+                          </span>
+                          <span className="text-[10px] text-slate-600 font-bold block mt-0.5">
+                            HUB CHIGNAHUAPAN, PUE. ➔ CONEXIÓN TRONCAL PUEBLA
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* INDICADOR GIGANTE DE NÚMERO DE PAQUETE */}
+                      <div className="bg-slate-950 text-white font-mono font-black text-xs px-3 py-1.5 rounded-lg text-center tracking-wider">
+                        <span className="text-[9px] block text-amber-300 font-sans font-bold uppercase">Bulto</span>
+                        <span className="text-sm">CAJA {boxNum} DE {selectedLabelOrder.boxesCount}</span>
+                      </div>
+                    </div>
+
+                    {/* BLOQUE CÓDIGO DE BARRAS & GUÍA OFICIAL */}
+                    <div className="bg-slate-50 border border-slate-300 p-2.5 rounded-xl text-center space-y-1">
+                      <div className="flex justify-center items-center py-1">
+                        {/* Simulación visual de código de barras Code128 */}
+                        <div className="flex items-center h-10 space-x-[2px] overflow-hidden justify-center px-4">
+                          {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 2, 1, 4, 2, 3, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 2, 1, 4, 3, 1, 2].map((w, idx) => (
+                            <div 
+                              key={idx} 
+                              className="bg-slate-950 h-full" 
+                              style={{ width: `${w}px` }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="font-mono font-black text-lg text-slate-950 tracking-widest">
+                        * {selectedLabelOrder.castoresGuideNumber} *
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono">
+                        FOLIO INTERNO: <strong>{selectedLabelOrder.id}</strong> · FECHA: {selectedLabelOrder.date}
+                      </div>
+                    </div>
+
+                    {/* BLOQUE DESTINO DESTACADO */}
+                    <div className="bg-amber-400 text-slate-950 p-2.5 rounded-xl border border-amber-500 flex items-center justify-between">
+                      <div>
+                        <span className="text-[9px] font-black uppercase tracking-wider block text-slate-900">
+                          CIUDAD DESTINO:
+                        </span>
+                        <div className="text-base font-black uppercase leading-tight tracking-wide">
+                          {selectedLabelOrder.destinationCity}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-[9px] font-bold uppercase block text-slate-900">MODALIDAD:</span>
+                        <span className="bg-slate-950 text-white font-black text-[10px] px-2 py-0.5 rounded-md uppercase">
+                          {selectedLabelOrder.deliveryType || 'A DOMICILIO'}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* DATOS DESTINATARIO & REMITENTE */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs border border-slate-300 rounded-xl p-3 bg-white">
+                      {/* Destinatario */}
+                      <div className="space-y-0.5 border-b sm:border-b-0 sm:border-r border-slate-200 pb-2 sm:pb-0 sm:pr-3">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                          DESTINATARIO (CONSIGNEE):
+                        </span>
+                        <div className="font-black text-slate-900 text-xs">
+                          {selectedLabelOrder.buyerName}
+                        </div>
+                        {selectedLabelOrder.clientType && (
+                          <span className="text-[10px] text-slate-500 font-semibold block">
+                            {selectedLabelOrder.clientType}
+                          </span>
+                        )}
+                        <div className="text-[11px] text-slate-700 font-medium leading-snug pt-0.5">
+                          {selectedLabelOrder.destinationAddress}
+                        </div>
+                        <div className="text-[11px] text-slate-900 font-bold pt-0.5">
+                          TEL: {selectedLabelOrder.buyerPhone}
+                        </div>
+                      </div>
+
+                      {/* Remitente */}
+                      <div className="space-y-0.5 sm:pl-1">
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
+                          REMITENTE (SHIPPER / TALLER):
+                        </span>
+                        <div className="font-black text-emerald-800 text-xs">
+                          {selectedLabelOrder.artisanBusiness}
+                        </div>
+                        <div className="text-[10px] font-mono text-slate-500 font-bold">
+                          CLIENTE: {selectedLabelOrder.clientNumber || 'MOSTRADOR-DIRECTO'}
+                        </div>
+                        <div className="text-[11px] text-slate-600 leading-snug pt-0.5">
+                          Agencia Bodega Hub Chignahuapan, Puebla, México
+                        </div>
+                        <div className="text-[10px] text-slate-500 font-semibold pt-0.5">
+                          EMBALAJE: {selectedLabelOrder.packagingName}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* ESPECIFICACIÓN DE CONTENIDO DE ESTA CAJA */}
+                    <div className="bg-slate-50 p-2.5 rounded-xl border border-slate-200 text-xs space-y-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black text-slate-500 uppercase">
+                          CONTENIDO DECLARADO EN ESTA CAJA:
+                        </span>
+                        <span className="bg-emerald-100 text-emerald-900 font-black text-[11px] px-2 py-0.5 rounded-md border border-emerald-300">
+                          ~{piecesInThisBox} Esferas Artesanales
+                        </span>
+                      </div>
+                      <div className="font-bold text-slate-900 text-xs">
+                        {selectedLabelOrder.contentCategory || 'Esferas Tradicionales de Cristal'}
+                      </div>
+                      <p className="text-[11px] text-slate-600 line-clamp-1">
+                        {selectedLabelOrder.contentDetails || selectedLabelOrder.itemsSummary}
+                      </p>
+                    </div>
+
+                    {/* SELLO DE SEGURIDAD ROJO: MUY FRÁGIL CRISTAL SOPLADO */}
+                    <div className="bg-rose-50 border-2 border-rose-600 text-rose-950 p-2.5 rounded-xl flex items-center justify-between gap-2">
+                      <div className="flex items-center space-x-2">
+                        <div className="text-xl">⚠️</div>
+                        <div>
+                          <span className="font-black text-xs text-rose-900 uppercase tracking-wider block leading-none">
+                            ALTA FRAGILIDAD · CRISTAL SOPLADO DE CHIGNAHUAPAN
+                          </span>
+                          <span className="text-[10px] text-rose-700 font-bold block mt-0.5">
+                            ↑↑ ESTE LADO ARRIBA · ESTIBA MÁXIMA 3 CAJAS · NO INVERTIR · MANEJAR CON GUANTES
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="bg-rose-600 text-white font-black text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider">
+                          ANTISHOCK ACTIVO
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* FOOTER DE LA ETIQUETA CON INSTRUCCIONES */}
+                    <div className="flex justify-between items-center text-[9px] text-slate-400 font-mono pt-1">
+                      <span>GRUPO TRIBUNA LOGÍSTICA · WWW.GRUPOTRIBUNA.COM.MX</span>
+                      <span>ETIQUETA OFICIAL DE EMBARQUE CASTORES 2026</span>
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* BOTÓN INFERIOR DE IMPRESIÓN */}
+            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+              <span className="text-xs text-slate-500">
+                Imprime en impresora térmica de etiquetas (Zebra/Xprinter) o papel adhesivo carta.
+              </span>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-md active:scale-95 transition-all"
+              >
+                <Printer className="w-4 h-4" />
+                <span>Mandar a Imprimir ({selectedBoxIndexForLabel === 'ALL' ? `${selectedLabelOrder.boxesCount} Cajas` : `Caja ${selectedBoxIndexForLabel}`})</span>
+              </button>
+            </div>
+
           </div>
         </div>
       )}
