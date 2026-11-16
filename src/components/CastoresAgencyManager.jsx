@@ -35,7 +35,10 @@ import {
   CheckSquare,
   Square,
   Tag,
-  Info
+  Info,
+  Camera,
+  ShieldAlert,
+  Eye
 } from 'lucide-react';
 
 import {
@@ -158,6 +161,26 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   const [counterBoxesCount, setCounterBoxesCount] = useState(3);
   const [counterPackagingId, setCounterPackagingId] = useState('pack-premium');
   const [counterDeclaredValue, setCounterDeclaredValue] = useState(2500);
+
+  // Estados de Inspección Física, Blindaje contra Roturas y Evidencia Fotográfica
+  const [counterCheckVisualIntegrity, setCounterCheckVisualIntegrity] = useState(true);
+  const [counterCheckAntishockPacking, setCounterCheckAntishockPacking] = useState(true);
+  const [counterCheckSealedSecurityTape, setCounterCheckSealedSecurityTape] = useState(true);
+  const [counterInspectionInspector, setCounterInspectionInspector] = useState('Rodrigo Castelán (Encargado Hub)');
+  const [counterInspectionNotes, setCounterInspectionNotes] = useState('Esferas inspeccionadas en mostrador ante el cliente. 0 piezas rotas registradas. Empacadas con celdas y cinta Castores.');
+  const [counterEvidencePhoto, setCounterEvidencePhoto] = useState(null);
+  const [counterWarrantyActive, setCounterWarrantyActive] = useState(true);
+
+  // Manejador para carga de foto testigo / evidencia
+  const handleEvidencePhotoUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      setCounterEvidencePhoto(event.target?.result);
+    };
+    reader.readAsDataURL(file);
+  };
 
   // =========================================================================
   // ESTADOS DE SELECCIÓN DE CLIENTES PARA SALIDA A PUEBLA (MANIFIESTO)
@@ -417,7 +440,17 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       status: 'Recibido en Bodega Hub Chignahuapan',
       castoresStatus: `Resguardado en bodega · Programado para salida troncal a Puebla (${shuttleConfig.departureTime ? `${shuttleConfig.departureTime} hrs` : 'Horario Manual'})`,
       estimatedDeliveryDate: counterPricing.dest.avgDays === 1 ? 'Mañana' : `En ${counterPricing.dest.avgDays} días hábiles`,
-      fragilityWarrantyActive: true,
+      fragilityWarrantyActive: counterWarrantyActive,
+      warrantyCoverageMXN: Number(counterDeclaredValue) || 2500,
+      inspectionData: {
+        visualApproved: counterCheckVisualIntegrity,
+        antishockApproved: counterCheckAntishockPacking,
+        tapeSealed: counterCheckSealedSecurityTape,
+        inspectedBy: counterInspectionInspector,
+        notes: counterInspectionNotes,
+        evidencePhoto: counterEvidencePhoto,
+        inspectionTimestamp: new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })
+      },
       notes: `Recepción en mostrador de agencia Castores. Productor aliado: ${selectedMerchant?.businessName || 'N/A'}`
     };
 
@@ -460,6 +493,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
     setCounterBuyerName('');
     setCounterBuyerPhone('');
     setCounterDestinationAddress('');
+    setCounterClientPresetId('');
+    setCounterEvidencePhoto(null);
     setCounterBoxesCount(2);
 
     alert(`🎉 ¡Envío ${newFolio} recibido en bodega con éxito!\nGuía Castores: ${generatedGuide}\nSe acreditaron +${counterPricing.pointsEarned} Puntos Castores a ${selectedMerchant?.businessName || 'Mostrador'}.`);
@@ -1169,6 +1204,146 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     <span className="font-bold text-amber-900 bg-amber-100/80 px-2.5 py-0.5 rounded-full text-[10px] inline-block border border-amber-300">
                       {counterFragilityLevel}
                     </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* PASO 4: PROTOCOLO DE INSPECCIÓN FÍSICA & EVIDENCIA TESTIGO */}
+              <div className="space-y-3.5 pt-3 border-t border-slate-100">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="text-xs font-black text-slate-800 uppercase tracking-wider flex items-center space-x-1.5">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                    <span>4. Protocolo de Inspección Física & Evidencia (Blindaje contra Reclamos):</span>
+                  </span>
+                  <span className="text-[10px] bg-emerald-100 text-emerald-900 font-bold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                    Revisión en Presencia del Remitente
+                  </span>
+                </div>
+
+                {/* 3 CHECKBOXES DE CONTROL DE INTEGRIDAD */}
+                <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-200 space-y-2.5">
+                  <label className="flex items-start space-x-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={counterCheckVisualIntegrity}
+                      onChange={(e) => setCounterCheckVisualIntegrity(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold text-slate-900 block">
+                        1. Inspección visual completada (0 piezas rotas al momento de ingreso a bodega)
+                      </span>
+                      <span className="text-slate-500 text-[11px]">
+                        Se abrieron las cajas en mostrador ante el cliente y se comprobó que no hay esferas estrelladas de origen.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start space-x-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={counterCheckAntishockPacking}
+                      onChange={(e) => setCounterCheckAntishockPacking(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold text-slate-900 block">
+                        2. Celdas antishock y amortiguamiento verificado
+                      </span>
+                      <span className="text-slate-500 text-[11px]">
+                        Las esferas cuentan con separación física individual (alveolos de cartón/burbuja), sin holguras que provoquen golpes internos.
+                      </span>
+                    </div>
+                  </label>
+
+                  <label className="flex items-start space-x-2.5 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={counterCheckSealedSecurityTape}
+                      onChange={(e) => setCounterCheckSealedSecurityTape(e.target.checked)}
+                      className="w-4 h-4 mt-0.5 rounded text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div className="text-xs">
+                      <span className="font-bold text-slate-900 block">
+                        3. Sellado perimetral con cinta de seguridad inviolable Castores
+                      </span>
+                      <span className="text-slate-500 text-[11px]">
+                        Caja cerrada con cinta de alta adherencia con leyenda "MUY FRÁGIL / NO ABRIR EN RUTA".
+                      </span>
+                    </div>
+                  </label>
+                </div>
+
+                {/* INSPECTOR & NOTAS DE CONDICIÓN */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Inspeccionado por:</label>
+                    <input
+                      type="text"
+                      value={counterInspectionInspector}
+                      onChange={(e) => setCounterInspectionInspector(e.target.value)}
+                      placeholder="Ej. Rodrigo Castelán (Hub)"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
+                    />
+                  </div>
+
+                  <div className="sm:col-span-2">
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Dictamen / Observaciones de Inspección:</label>
+                    <input
+                      type="text"
+                      value={counterInspectionNotes}
+                      onChange={(e) => setCounterInspectionNotes(e.target.value)}
+                      placeholder="Ej. Esferas en óptimo estado, sin fisuras de taller, celdas acolchadas colocadas."
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* ADJUNTAR FOTO TESTIGO / EVIDENCIA */}
+                <div className="bg-amber-50/60 p-3 rounded-2xl border border-amber-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center space-x-2.5">
+                    <div className="p-2 bg-amber-100 rounded-xl text-amber-900 shrink-0">
+                      <Camera className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-black text-slate-900 block">
+                        Foto Testigo de la Caja Abierta (Opcional):
+                      </span>
+                      <span className="text-slate-500 text-[11px]">
+                        {counterEvidencePhoto ? '✅ Foto de evidencia cargada y lista para archivo.' : 'Toma una foto de las esferas dentro de la caja antes de encintar para blindar el flete.'}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    {counterEvidencePhoto ? (
+                      <div className="flex items-center space-x-2">
+                        <img 
+                          src={counterEvidencePhoto} 
+                          alt="Evidencia" 
+                          className="w-10 h-10 object-cover rounded-lg border border-emerald-400 shadow-xs" 
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setCounterEvidencePhoto(null)}
+                          className="text-[10px] text-rose-600 hover:underline font-bold"
+                        >
+                          Eliminar Foto
+                        </button>
+                      </div>
+                    ) : (
+                      <label className="cursor-pointer bg-white hover:bg-slate-100 text-slate-800 border border-slate-300 font-bold px-3 py-1.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-xs transition-all">
+                        <Camera className="w-3.5 h-3.5 text-amber-600" />
+                        <span>Tomar / Subir Foto</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          capture="environment"
+                          onChange={handleEvidencePhotoUpload}
+                          className="hidden"
+                        />
+                      </label>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2341,9 +2516,13 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           <p className="text-xs text-slate-800 font-medium line-clamp-2 leading-relaxed">
                             {ord.contentDetails || ord.itemsSummary}
                           </p>
-                          <div className="mt-1">
+                          <div className="mt-1 flex flex-wrap items-center gap-1">
                             <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full inline-block">
                               {ord.fragilityLevel || 'Alta Fragilidad'}
+                            </span>
+                            <span className="text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-flex items-center space-x-1">
+                              <span>✓</span>
+                              <span>0 Roturas Certificadas</span>
                             </span>
                           </div>
                         </td>
@@ -2511,10 +2690,42 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <span className="text-slate-500">Total Cobrado:</span>
                 <span className="font-black text-amber-700">${selectedReceiptOrder.totalChargedToCustomer?.toLocaleString()} MXN</span>
               </div>
-              <div className="flex justify-between py-1">
+              <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-emerald-700 font-bold">Puntos Abonados al Comercio:</span>
                 <span className="font-black text-emerald-700">+{selectedReceiptOrder.pointsAwardedToMerchant} pts</span>
               </div>
+            </div>
+
+            {/* BLOQUE INSPECCIÓN FÍSICA Y DICTAMEN EN COMPROBANTE */}
+            <div className="bg-emerald-50/80 p-3 rounded-2xl border border-emerald-200 text-xs space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="font-black text-emerald-900 flex items-center space-x-1">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                  <span>Dictamen de Inspección Física:</span>
+                </span>
+                <span className="bg-emerald-200 text-emerald-950 font-black px-2 py-0.5 rounded-full text-[10px]">
+                  0 Roturas al Recibir
+                </span>
+              </div>
+              <p className="text-[11px] text-emerald-900 font-medium leading-relaxed">
+                {selectedReceiptOrder.inspectionData?.notes || 'Esferas inspeccionadas en mostrador ante el cliente. 0 piezas rotas registradas.'}
+              </p>
+              <div className="flex justify-between items-center text-[10px] text-emerald-800 pt-0.5 border-t border-emerald-200/60">
+                <span>Inspector: <strong>{selectedReceiptOrder.inspectionData?.inspectedBy || 'Rodrigo Castelán (Hub)'}</strong></span>
+                <span>Garantía Antishock: <strong>${(selectedReceiptOrder.warrantyCoverageMXN || 2500).toLocaleString()} MXN</strong></span>
+              </div>
+              {selectedReceiptOrder.inspectionData?.evidencePhoto && (
+                <div className="pt-1 flex items-center space-x-2">
+                  <img 
+                    src={selectedReceiptOrder.inspectionData.evidencePhoto} 
+                    alt="Foto Testigo" 
+                    className="w-12 h-12 object-cover rounded-lg border border-emerald-300 shadow-xs" 
+                  />
+                  <span className="text-[10px] text-emerald-800 font-bold">
+                    📸 Foto testigo de caja abierta archivada en sistema
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="pt-2 space-y-2">
@@ -2542,7 +2753,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       `📍 *Destino:* ${selectedReceiptOrder.destinationCity}\n` +
                       `📦 *Bultos:* ${selectedReceiptOrder.boxesCount} cajas (${selectedReceiptOrder.packagingName})\n` +
                       `🔮 *Contenido:* ${pieces} esferas (${cat})\n` +
-                      `🛡️ *Fragilidad:* ${selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}\n` +
+                      `🛡️ *Inspección Física:* Certificada en mostrador (0 esferas rotas registradas de origen y precintado inviolable Castores)\n` +
+                      `🛡️ *Garantía Antishock:* Activa ($${(selectedReceiptOrder.warrantyCoverageMXN || 2500).toLocaleString()} MXN)\n` +
                       `🚚 *Estatus:* ${selectedReceiptOrder.castoresStatus}\n\n` +
                       `¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
                     navigator.clipboard.writeText(text);
@@ -3008,6 +3220,17 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           ANTISHOCK ACTIVO
                         </span>
                       </div>
+                    </div>
+
+                    {/* SELLO DE INSPECCIÓN FÍSICA CERTIFICADA */}
+                    <div className="bg-emerald-50 border border-emerald-400 p-2 rounded-xl flex items-center justify-between text-[10px] text-emerald-950 font-bold">
+                      <div className="flex items-center space-x-1.5">
+                        <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+                        <span>INSPECCIÓN FÍSICA EN MOSTRADOR: 0 ROTURAS DE ORIGEN · CINTA CASTORES INVIOLABLE</span>
+                      </div>
+                      <span className="font-mono text-[9px] text-emerald-800 uppercase">
+                        INSPECTOR: {selectedLabelOrder.inspectionData?.inspectedBy || 'RODRIGO CASTELÁN (HUB)'}
+                      </span>
                     </div>
 
                     {/* FOOTER DE LA ETIQUETA CON INSTRUCCIONES */}
