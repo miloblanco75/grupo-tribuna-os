@@ -4,6 +4,57 @@
 
 :root {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  --font-scale: 1.18; /* Incremento base del 18% para máxima legibilidad */
+}
+
+/* Escalamiento global de tipografía del sistema */
+html {
+  font-size: calc(16px * var(--font-scale, 1.18));
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Modos de accesibilidad de tamaño de letra */
+html.font-scale-normal {
+  --font-scale: 1.05; /* 5% mayor al estándar web */
+}
+
+html.font-scale-large {
+  --font-scale: 1.22; /* 22% mayor: claro, cómodo y legible */
+}
+
+html.font-scale-xlarge {
+  --font-scale: 1.38; /* 38% mayor: texto grande para fácil lectura */
+}
+
+/* Protección para que ningún texto quede microscópico o ilegible */
+.text-\[10px\] {
+  font-size: 0.76rem !important; /* ~14-15px escalados */
+  line-height: 1.15rem !important;
+}
+
+.text-\[11px\] {
+  font-size: 0.82rem !important; /* ~15-16px escalados */
+  line-height: 1.25rem !important;
+}
+
+.text-xs {
+  font-size: 0.885rem !important; /* ~16-17px escalados */
+  line-height: 1.35rem !important;
+}
+
+.text-sm {
+  font-size: 0.985rem !important; /* ~18px escalados */
+  line-height: 1.48rem !important;
+}
+
+.text-base {
+  font-size: 1.085rem !important; /* ~19-20px escalados */
+  line-height: 1.6rem !important;
+}
+
+/* Mayor comodidad visual en inputs y botones */
+input, select, textarea, button {
+  font-size: inherit;
 }
 
 /* Custom scrollbars */

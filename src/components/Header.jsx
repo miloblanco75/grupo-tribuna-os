@@ -21,7 +21,9 @@ export default function Header({
   onOpenReportModal,
   pendingTasksCount,
   onOpenMotul,
-  onOpenInstallModal
+  onOpenInstallModal,
+  fontSizeScale,
+  setFontSizeScale
 }) {
   return (
     <header className="bg-slate-950 text-white border-b border-slate-800 sticky top-0 z-30 shadow-xl">
@@ -70,6 +72,23 @@ export default function Header({
               <span>📲</span>
               <span className="hidden sm:inline">Instalar App</span>
               <span className="sm:hidden">App</span>
+            </button>
+
+            {/* Selector de Tamaño de Letra / Legibilidad */}
+            <button
+              onClick={() => {
+                if (setFontSizeScale) {
+                  const next = fontSizeScale === 'large' ? 'xlarge' : fontSizeScale === 'xlarge' ? 'normal' : 'large';
+                  setFontSizeScale(next);
+                }
+              }}
+              className="flex items-center space-x-1.5 px-3 py-2 sm:px-3.5 sm:py-2.5 bg-slate-900 hover:bg-slate-800 text-slate-200 border border-slate-700 hover:border-amber-400/60 rounded-xl transition-all shadow-md active:scale-95"
+              title="Ajustar tamaño de letra de la aplicación (Normal / Grande / Extra Grande)"
+            >
+              <span className="font-black text-amber-400 text-base leading-none">A<span className="text-xs text-amber-300">A</span></span>
+              <span className="hidden md:inline text-xs font-bold text-slate-300">
+                {fontSizeScale === 'xlarge' ? 'Texto: Extra Grande' : fontSizeScale === 'large' ? 'Texto: Grande' : 'Texto: Normal'}
+              </span>
             </button>
             
             {/* Acceso Directo a Motul */}

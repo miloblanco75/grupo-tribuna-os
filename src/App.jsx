@@ -77,6 +77,17 @@ export default function App() {
   const [isReportModalOpen, setIsReportModalOpen] = useState(false);
   const [isInstallModalOpen, setIsInstallModalOpen] = useState(false);
 
+  // Escala de tamaño de letra para máxima legibilidad ('normal' | 'large' | 'xlarge')
+  const [fontSizeScale, setFontSizeScale] = useState(() => {
+    return localStorage.getItem('tribuna_font_scale') || 'large';
+  });
+
+  useEffect(() => {
+    localStorage.setItem('tribuna_font_scale', fontSizeScale);
+    document.documentElement.classList.remove('font-scale-normal', 'font-scale-large', 'font-scale-xlarge');
+    document.documentElement.classList.add(`font-scale-${fontSizeScale}`);
+  }, [fontSizeScale]);
+
   // Guardar automáticamente en localStorage cuando haya cambios
   useEffect(() => {
     localStorage.setItem('villacorp_projects_v5_targets', JSON.stringify(projects));
@@ -349,6 +360,8 @@ export default function App() {
           setCurrentTab('projects');
         }}
         onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        fontSizeScale={fontSizeScale}
+        setFontSizeScale={setFontSizeScale}
       />
 
       {/* Contenido Principal según Pestaña */}
