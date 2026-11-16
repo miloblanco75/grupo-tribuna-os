@@ -150,6 +150,9 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   const [counterClientType, setCounterClientType] = useState('Turista Particular en Tienda');
   const [counterBuyerName, setCounterBuyerName] = useState('');
   const [counterBuyerPhone, setCounterBuyerPhone] = useState('');
+  const [counterCastoresGuideNumber, setCounterCastoresGuideNumber] = useState('');
+  const [isEditingCastoresGuideInModal, setIsEditingCastoresGuideInModal] = useState(false);
+  const [tempGuideInput, setTempGuideInput] = useState('');
   const [counterDestinationCity, setCounterDestinationCity] = useState(POPULAR_DESTINATIONS[0].city);
   const [counterDestinationAddress, setCounterDestinationAddress] = useState('');
   const [counterDeliveryType, setCounterDeliveryType] = useState('Domicilio'); // 'Domicilio' | 'Ocurre Oficina Castores'
@@ -476,14 +479,16 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
 
     const nextOrderNum = agencyOrders.length + 101;
     const newFolio = `GT-CHIG-2026-${nextOrderNum}`;
-    const generatedGuide = `${Math.floor(6830000 + Math.random() * 9999)}-PUE`;
+    const finalCastoresGuide = counterCastoresGuideNumber.trim()
+      ? counterCastoresGuideNumber.trim().toUpperCase()
+      : `${Math.floor(6830000 + Math.random() * 9999)}-PUE`;
     const today = new Date().toISOString().split('T')[0];
 
     const selectedMerchant = merchants.find(m => m.id === counterMerchantId);
 
     const newOrder = {
       id: newFolio,
-      castoresGuideNumber: generatedGuide,
+      castoresGuideNumber: finalCastoresGuide,
       date: today,
       artisanId: selectedMerchant?.id || 'direct-client',
       artisanBusiness: selectedMerchant?.businessName || 'Recepción Mostrador / Sin Afiliado',
@@ -568,12 +573,27 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
     // Resetear formulario para siguiente cliente
     setCounterBuyerName('');
     setCounterBuyerPhone('');
+    setCounterCastoresGuideNumber('');
     setCounterDestinationAddress('');
     setCounterClientPresetId('');
     setCounterEvidencePhoto(null);
     setCounterBoxesCount(2);
 
-    alert(`🎉 ¡Envío ${newFolio} recibido en bodega con éxito!\nGuía Castores: ${generatedGuide}\nSe acreditaron +${counterPricing.pointsEarned} Puntos Castores a ${selectedMerchant?.businessName || 'Mostrador'}.`);
+    alert(`🎉 ¡Envío ${newFolio} recibido en bodega con éxito!\nGuía Castores: ${finalCastoresGuide}\nSe acreditaron +${counterPricing.pointsEarned} Puntos Castores a ${selectedMerchant?.businessName || 'Mostrador'}.`);
+  };
+
+  // Actualización rápida de Guía Oficial Castores para rastreo (si se asigna después)
+  const handleUpdateCastoresGuideNumber = (orderId, newGuide) => {
+    if (!newGuide || !newGuide.trim()) return;
+    const cleanGuide = newGuide.trim().toUpperCase();
+    setAgencyOrders(prev => prev.map(o => o.id === orderId ? { ...o, castoresGuideNumber: cleanGuide } : o));
+    if (selectedLabelOrder && selectedLabelOrder.id === orderId) {
+      setSelectedLabelOrder(prev => ({ ...prev, castoresGuideNumber: cleanGuide }));
+    }
+    if (selectedReceiptOrder && selectedReceiptOrder.id === orderId) {
+      setSelectedReceiptOrder(prev => ({ ...prev, castoresGuideNumber: cleanGuide }));
+    }
+    setIsEditingCastoresGuideInModal(false);
   };
 
   // =========================================================================
@@ -1137,6 +1157,33 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       placeholder={counterDeliveryType === 'Domicilio' ? "Ej. Av. Constitución #450, Col. Obispado, C.P. 64060" : "Se entregará en la terminal Castores más cercana a la ciudad"}
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                     />
+                  </div>
+                </div>
+
+                {/* GUÍA OFICIAL CASTORES (TALÓN PARA RASTREO DEL COMPRADOR) */}
+                <div className="bg-amber-50/80 border border-amber-300 rounded-2xl p-3.5 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <div className="flex items-center space-x-1.5 text-xs font-black text-slate-900">
+                      <Truck className="w-4 h-4 text-amber-700" />
+                      <span>Guía Oficial Castores / Talón Físico (Para Rastreo del Comprador):</span>
+                    </div>
+                    <span className="text-[10px] bg-amber-200 text-amber-950 font-black px-2 py-0.5 rounded-md self-start sm:self-auto">
+                      🌐 Rastreo Nacional en www.castores.com.mx
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+                    <div className="sm:col-span-2">
+                      <input
+                        type="text"
+                        value={counterCastoresGuideNumber}
+                        onChange={(e) => setCounterCastoresGuideNumber(e.target.value)}
+                        placeholder="Ej. CAS-98214-PUE o No. de Talón Castores (Opcional)"
+                        className="w-full px-3 py-2 bg-white border border-amber-300 rounded-xl text-xs font-mono font-black text-slate-900 focus:outline-none focus:ring-2 focus:ring-amber-500 uppercase placeholder:normal-case placeholder:font-normal placeholder:text-slate-400"
+                      />
+                    </div>
+                    <div className="text-[11px] text-slate-600 leading-tight">
+                      Si aún no tienes el talón físico en mostrador, déjalo vacío; el software asignará un folio temporal que podrás actualizar en cualquier momento.
+                    </div>
                   </div>
                 </div>
               </div>
@@ -2640,10 +2687,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                               setSelectedBoxIndexForLabel('ALL');
                             }}
                             className="mt-1.5 w-full bg-amber-100 hover:bg-amber-200 text-amber-950 font-black px-2 py-1 rounded-lg text-[10px] flex items-center justify-center space-x-1 border border-amber-300 shadow-xs transition-all"
-                            title="Generar e imprimir etiquetas adhesivas para las cajas"
+                            title="Generar e imprimir etiquetas de control interno para bodega"
                           >
                             <Tag className="w-3 h-3 text-amber-800" />
-                            <span>Stickers ({ord.boxesCount})</span>
+                            <span>Etiquetas Bodega ({ord.boxesCount})</span>
                           </button>
                         </td>
                       </tr>
@@ -3028,7 +3075,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 className="w-full bg-amber-400 hover:bg-amber-300 text-slate-950 font-black py-2.5 px-3 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md transition-all active:scale-95"
               >
                 <Tag className="w-4 h-4 text-slate-950" />
-                <span>Imprimir Etiquetas Adhesivas ({selectedReceiptOrder.boxesCount} Stickers para Cajas)</span>
+                <span>Imprimir Etiquetas de Control Interno ({selectedReceiptOrder.boxesCount} Cajas Bodega)</span>
               </button>
 
               <div className="flex gap-2">
@@ -3277,44 +3324,58 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       {/* ========================================================================= */}
       {/* MODAL: GENERADOR DE ETIQUETAS ADHESIVAS / STICKERS DE CAJA (CASTORES) */}
       {/* ========================================================================= */}
+      {/* ========================================================================= */}
+      {/* MODAL: ETIQUETAS ADHESIVAS DE CONTROL INTERNO (BODEGA CHIGNAHUAPAN)       */}
+      {/* ========================================================================= */}
       {selectedLabelOrder && (
         <div 
           className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in overflow-y-auto"
-          onClick={() => setSelectedLabelOrder(null)}
+          onClick={() => {
+            setSelectedLabelOrder(null);
+            setIsEditingCastoresGuideInModal(false);
+          }}
         >
           <div 
             className="bg-white rounded-3xl max-w-2xl w-full p-6 sm:p-7 space-y-5 shadow-2xl border border-slate-200 max-h-[95vh] overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             {/* ENCABEZADO DEL MODAL */}
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-100 pb-3 gap-3">
               <div className="flex items-center space-x-2">
-                <div className="p-2 bg-amber-100 rounded-xl text-amber-900">
+                <div className="p-2.5 bg-amber-400 text-slate-950 rounded-xl font-black shadow-xs">
                   <Tag className="w-5 h-5" />
                 </div>
                 <div>
-                  <h3 className="text-base font-black text-slate-900 leading-tight">
-                    Stickers de Embarque & Identificación de Cajas
-                  </h3>
-                  <p className="text-xs text-slate-500">
-                    Guía Castores: <strong className="text-slate-900 font-mono">{selectedLabelOrder.castoresGuideNumber}</strong> · {selectedLabelOrder.boxesCount} {selectedLabelOrder.boxesCount === 1 ? 'Caja' : 'Cajas'}
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-base font-black text-slate-900 leading-tight">
+                      Etiquetas de Control Interno · Bodega Hub Chignahuapan
+                    </h3>
+                    <span className="bg-slate-900 text-white text-[9px] font-black uppercase px-2 py-0.5 rounded">
+                      Uso Interno
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    Folio Interno: <strong className="text-slate-900 font-mono">{selectedLabelOrder.id}</strong> · {selectedLabelOrder.boxesCount} {selectedLabelOrder.boxesCount === 1 ? 'Caja' : 'Cajas'}
                   </p>
                 </div>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 self-end sm:self-auto">
                 <button
                   type="button"
                   onClick={() => window.print()}
                   className="bg-slate-900 hover:bg-slate-800 text-white font-black px-3.5 py-2 rounded-xl text-xs flex items-center space-x-1.5 shadow-sm active:scale-95 transition-all"
                 >
                   <Printer className="w-3.5 h-3.5" />
-                  <span>Imprimir Stickers</span>
+                  <span>Imprimir Etiquetas</span>
                 </button>
 
                 <button
                   type="button"
-                  onClick={() => setSelectedLabelOrder(null)}
+                  onClick={() => {
+                    setSelectedLabelOrder(null);
+                    setIsEditingCastoresGuideInModal(false);
+                  }}
                   className="w-8 h-8 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center hover:bg-slate-200 transition-colors"
                 >
                   <X className="w-4 h-4" />
@@ -3322,9 +3383,64 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </div>
             </div>
 
+            {/* BARRA DE ASOCIACIÓN: GUÍA OFICIAL CASTORES PARA RASTREO DEL COMPRADOR */}
+            <div className="bg-amber-50 border-2 border-amber-300 rounded-2xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-2.5">
+              <div className="space-y-0.5">
+                <div className="flex items-center space-x-1.5 text-xs font-black text-amber-950">
+                  <Truck className="w-4 h-4 text-amber-700" />
+                  <span>Guía Oficial Castores (Para Rastreo Nacional del Comprador):</span>
+                </div>
+                <div className="text-[11px] text-amber-900 font-medium">
+                  El cliente rastrea su envío directamente en <strong className="underline">www.castores.com.mx</strong> con este número.
+                </div>
+              </div>
+
+              {!isEditingCastoresGuideInModal ? (
+                <div className="flex items-center space-x-2">
+                  <span className="font-mono font-black text-sm bg-white text-slate-950 px-3 py-1 rounded-xl border border-amber-400 shadow-xs">
+                    {selectedLabelOrder.castoresGuideNumber}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTempGuideInput(selectedLabelOrder.castoresGuideNumber);
+                      setIsEditingCastoresGuideInModal(true);
+                    }}
+                    className="text-xs bg-amber-200 hover:bg-amber-300 text-amber-950 font-bold px-2.5 py-1 rounded-lg transition-colors whitespace-nowrap"
+                  >
+                    ✏️ Modificar
+                  </button>
+                </div>
+              ) : (
+                <div className="flex items-center space-x-1.5">
+                  <input
+                    type="text"
+                    value={tempGuideInput}
+                    onChange={(e) => setTempGuideInput(e.target.value)}
+                    placeholder="Ej. CAS-98214-PUE"
+                    className="px-2.5 py-1 text-xs font-mono font-bold bg-white border border-amber-400 rounded-lg uppercase w-36 focus:outline-none focus:ring-2 focus:ring-amber-500"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => handleUpdateCastoresGuideNumber(selectedLabelOrder.id, tempGuideInput)}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs px-2.5 py-1 rounded-lg shadow-xs"
+                  >
+                    Guardar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setIsEditingCastoresGuideInModal(false)}
+                    className="bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold text-xs px-2 py-1 rounded-lg"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+            </div>
+
             {/* SELECTOR DE CAJA INDIVIDUAL O TODAS LAS CAJAS */}
             <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 flex flex-wrap items-center justify-between gap-2 text-xs">
-              <span className="font-bold text-slate-700">Ver e Imprimir:</span>
+              <span className="font-bold text-slate-700">Imprimir Bultos:</span>
               <div className="flex flex-wrap gap-1">
                 <button
                   type="button"
@@ -3344,7 +3460,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     onClick={() => setSelectedBoxIndexForLabel(boxNum)}
                     className={`px-2.5 py-1.5 rounded-lg font-bold text-xs transition-all ${
                       selectedBoxIndexForLabel === boxNum
-                        ? 'bg-amber-400 text-slate-950 shadow-xs'
+                        ? 'bg-amber-400 text-slate-950 shadow-xs font-black'
                         : 'bg-white text-slate-700 border border-slate-200 hover:bg-slate-100'
                     }`}
                   >
@@ -3354,7 +3470,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </div>
             </div>
 
-            {/* CONTENEDOR DE ETIQUETAS ADHESIVAS (ESTILO INDUSTRIAL 4x6 / 10x15 CM) */}
+            {/* CONTENEDOR DE ETIQUETAS ADHESIVAS DE CONTROL INTERNO (ESTILO INDUSTRIAL 4x6 / 10x15 CM) */}
             <div className="space-y-6">
               {(selectedBoxIndexForLabel === 'ALL'
                 ? Array.from({ length: selectedLabelOrder.boxesCount }, (_, i) => i + 1)
@@ -3366,66 +3482,87 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 return (
                   <div
                     key={`label-box-${boxNum}`}
-                    className="border-2 border-slate-950 rounded-2xl p-5 bg-white shadow-md space-y-3 font-sans print:border-black print:shadow-none print:break-after-page"
+                    className="border-2 border-slate-950 rounded-2xl p-5 bg-white shadow-md space-y-3 font-sans print:border-black print:shadow-none print:break-after-page text-slate-900"
                   >
-                    {/* ENCABEZADO DE TRANSPORTISTA Y HUB */}
-                    <div className="flex items-center justify-between border-b-2 border-slate-950 pb-2">
-                      <div className="flex items-center space-x-2">
-                        <div className="bg-slate-950 text-white font-black text-xs px-2.5 py-1 rounded">
-                          CASTORES
-                        </div>
-                        <div>
-                          <span className="font-black text-slate-950 text-xs tracking-wider block leading-none">
-                            ALIANZA GRUPO TRIBUNA
+                    {/* ENCABEZADO DE CONTROL INTERNO Y BODEGA */}
+                    <div className="flex items-center justify-between border-b-2 border-slate-950 pb-2.5">
+                      <div className="space-y-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="bg-slate-950 text-white font-black text-xs px-2.5 py-1 rounded tracking-wide">
+                            ETIQUETA DE CONTROL INTERNO
                           </span>
-                          <span className="text-[10px] text-slate-600 font-bold block mt-0.5">
-                            HUB CHIGNAHUAPAN, PUE. ➔ CONEXIÓN TRONCAL PUEBLA
+                          <span className="bg-emerald-600 text-white font-black text-[10px] px-2 py-0.5 rounded uppercase">
+                            BODEGA CHIGNAHUAPAN
                           </span>
                         </div>
-                      </div>
-
-                      {/* INDICADOR GIGANTE DE NÚMERO DE PAQUETE */}
-                      <div className="bg-slate-950 text-white font-mono font-black text-xs px-3 py-1.5 rounded-lg text-center tracking-wider">
-                        <span className="text-[9px] block text-amber-300 font-sans font-bold uppercase">Bulto</span>
-                        <span className="text-sm">CAJA {boxNum} DE {selectedLabelOrder.boxesCount}</span>
-                      </div>
-                    </div>
-
-                    {/* BLOQUE CÓDIGO DE BARRAS & GUÍA OFICIAL */}
-                    <div className="bg-slate-50 border border-slate-300 p-2.5 rounded-xl text-center space-y-1">
-                      <div className="flex justify-center items-center py-1">
-                        {/* Simulación visual de código de barras Code128 */}
-                        <div className="flex items-center h-10 space-x-[2px] overflow-hidden justify-center px-4">
-                          {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 2, 1, 4, 2, 3, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 2, 1, 4, 3, 1, 2].map((w, idx) => (
-                            <div 
-                              key={idx} 
-                              className="bg-slate-950 h-full" 
-                              style={{ width: `${w}px` }}
-                            />
-                          ))}
+                        <div className="text-xs font-black text-slate-900 tracking-tight">
+                          GRUPO TRIBUNA LOGÍSTICA · CONEXIÓN AGENCIA CASTORES
+                        </div>
+                        <div className="text-[10px] text-slate-600 font-semibold">
+                          Conexión Troncal: Bodega Chignahuapan ➔ Terminal Puebla (Salida Diaria)
                         </div>
                       </div>
-                      <div className="font-mono font-black text-lg text-slate-950 tracking-widest">
-                        * {selectedLabelOrder.castoresGuideNumber} *
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-mono">
-                        FOLIO INTERNO: <strong>{selectedLabelOrder.id}</strong> · FECHA: {selectedLabelOrder.date}
-                      </div>
-                    </div>
 
-                    {/* BLOQUE DESTINO DESTACADO */}
-                    <div className="bg-amber-400 text-slate-950 p-2.5 rounded-xl border border-amber-500 flex items-center justify-between">
-                      <div>
-                        <span className="text-[9px] font-black uppercase tracking-wider block text-slate-900">
-                          CIUDAD DESTINO:
+                      {/* INDICADOR GIGANTE DE NÚMERO DE BULTO */}
+                      <div className="bg-amber-400 text-slate-950 border-2 border-slate-950 font-mono font-black px-4 py-2 rounded-xl text-center shadow-xs shrink-0">
+                        <span className="text-[9px] block text-slate-900 font-sans font-black uppercase tracking-wider">
+                          BULTO / CAJA
                         </span>
-                        <div className="text-base font-black uppercase leading-tight tracking-wide">
+                        <span className="text-base sm:text-lg leading-none">
+                          {boxNum} DE {selectedLabelOrder.boxesCount}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* DOBLE REFERENCIA: FOLIO INTERNO BODEGA VS GUÍA OFICIAL CASTORES */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                      {/* Folio Interno Bodega con Código de Barras */}
+                      <div className="bg-slate-50 border border-slate-300 p-2.5 rounded-xl text-center space-y-1">
+                        <span className="text-[9px] font-black uppercase tracking-wider block text-slate-500">
+                          FOLIO INTERNO DE BODEGA LOCAL:
+                        </span>
+                        <div className="flex justify-center items-center py-0.5">
+                          <div className="flex items-center h-8 space-x-[2px] overflow-hidden justify-center px-2">
+                            {[3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 3, 1, 2, 1, 4, 2, 3, 1, 3, 2, 1, 4, 1, 2, 3, 1, 4, 2, 1, 3, 2, 4, 1, 3, 2, 1, 4, 3, 1, 2].map((w, idx) => (
+                              <div key={idx} className="bg-slate-950 h-full" style={{ width: `${w}px` }} />
+                            ))}
+                          </div>
+                        </div>
+                        <div className="font-mono font-black text-sm text-slate-950 tracking-wider">
+                          * {selectedLabelOrder.id} - B{boxNum} *
+                        </div>
+                        <div className="text-[9px] text-slate-500 font-mono">
+                          Recepción: {selectedLabelOrder.date}
+                        </div>
+                      </div>
+
+                      {/* Guía Oficial Castores para Rastreo */}
+                      <div className="bg-amber-50 border-2 border-amber-400 p-2.5 rounded-xl text-center space-y-1 flex flex-col justify-center">
+                        <span className="text-[9px] font-black uppercase tracking-wider block text-amber-900">
+                          GUÍA OFICIAL CASTORES (TALÓN PARA RASTREO):
+                        </span>
+                        <div className="font-mono font-black text-base sm:text-lg text-slate-950 tracking-widest bg-white py-1 px-2 rounded-lg border border-amber-300">
+                          {selectedLabelOrder.castoresGuideNumber}
+                        </div>
+                        <div className="text-[9px] text-amber-950 font-bold">
+                          🌐 Rastrear en: <span className="underline">www.castores.com.mx</span> · Tel: 800 227 8070
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* BLOQUE DESTINO Y MODALIDAD */}
+                    <div className="bg-slate-900 text-white p-2.5 rounded-xl flex items-center justify-between">
+                      <div>
+                        <span className="text-[9px] font-bold uppercase tracking-wider block text-amber-300">
+                          DESTINO FINAL CASTORES:
+                        </span>
+                        <div className="text-base font-black uppercase leading-tight tracking-wide text-white">
                           {selectedLabelOrder.destinationCity}
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-[9px] font-bold uppercase block text-slate-900">MODALIDAD:</span>
-                        <span className="bg-slate-950 text-white font-black text-[10px] px-2 py-0.5 rounded-md uppercase">
+                        <span className="text-[9px] font-bold uppercase block text-slate-300">MODALIDAD DE ENTREGA:</span>
+                        <span className="bg-amber-400 text-slate-950 font-black text-[11px] px-2.5 py-0.5 rounded-md uppercase">
                           {selectedLabelOrder.deliveryType || 'A DOMICILIO'}
                         </span>
                       </div>
@@ -3436,7 +3573,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       {/* Destinatario */}
                       <div className="space-y-0.5 border-b sm:border-b-0 sm:border-r border-slate-200 pb-2 sm:pb-0 sm:pr-3">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                          DESTINATARIO (CONSIGNEE):
+                          DESTINATARIO (COMPRADOR / TURISTA):
                         </span>
                         <div className="font-black text-slate-900 text-xs">
                           {selectedLabelOrder.buyerName}
@@ -3457,19 +3594,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       {/* Remitente */}
                       <div className="space-y-0.5 sm:pl-1">
                         <span className="text-[10px] font-black text-slate-400 uppercase tracking-wider block">
-                          REMITENTE (SHIPPER / TALLER):
+                          REMITENTE LOCAL (TALLER / PRODUCTOR):
                         </span>
                         <div className="font-black text-emerald-800 text-xs">
                           {selectedLabelOrder.artisanBusiness}
                         </div>
                         <div className="text-[10px] font-mono text-slate-500 font-bold">
-                          CLIENTE: {selectedLabelOrder.clientNumber || 'MOSTRADOR-DIRECTO'}
+                          NO. CLIENTE AFILIADO: <span className="text-slate-900 font-black">{selectedLabelOrder.clientNumber || 'MOSTRADOR-DIRECTO'}</span>
                         </div>
                         <div className="text-[11px] text-slate-600 leading-snug pt-0.5">
                           Agencia Bodega Hub Chignahuapan, Puebla, México
                         </div>
                         <div className="text-[10px] text-slate-500 font-semibold pt-0.5">
-                          EMBALAJE: {selectedLabelOrder.packagingName}
+                          EMBALAJE INTERNO: {selectedLabelOrder.packagingName}
                         </div>
                       </div>
                     </div>
@@ -3512,21 +3649,21 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       </div>
                     </div>
 
-                    {/* SELLO DE INSPECCIÓN FÍSICA CERTIFICADA */}
+                    {/* SELLO DE INSPECCIÓN FÍSICA CERTIFICADA EN BODEGA */}
                     <div className="bg-emerald-50 border border-emerald-400 p-2 rounded-xl flex items-center justify-between text-[10px] text-emerald-950 font-bold">
                       <div className="flex items-center space-x-1.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>INSPECCIÓN FÍSICA EN MOSTRADOR: 0 ROTURAS DE ORIGEN · CINTA CASTORES INVIOLABLE</span>
+                        <span>INSPECCIÓN EN BODEGA: 0 ROTURAS DE ORIGEN · CINTA CASTORES INVIOLABLE</span>
                       </div>
                       <span className="font-mono text-[9px] text-emerald-800 uppercase">
-                        INSPECTOR: {selectedLabelOrder.inspectionData?.inspectedBy || 'RODRIGO CASTELÁN (HUB)'}
+                        RECIBIÓ: {selectedLabelOrder.inspectionData?.inspectedBy || 'RODRIGO CASTELÁN (HUB)'}
                       </span>
                     </div>
 
                     {/* FOOTER DE LA ETIQUETA CON INSTRUCCIONES */}
                     <div className="flex justify-between items-center text-[9px] text-slate-400 font-mono pt-1">
-                      <span>GRUPO TRIBUNA LOGÍSTICA · WWW.GRUPOTRIBUNA.COM.MX</span>
-                      <span>ETIQUETA OFICIAL DE EMBARQUE CASTORES 2026</span>
+                      <span>GRUPO TRIBUNA · BODEGA HUB CHIGNAHUAPAN</span>
+                      <span>ETIQUETA ADHESIVA DE CONTROL INTERNO 2026</span>
                     </div>
 
                   </div>
@@ -3535,14 +3672,14 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
             </div>
 
             {/* BOTÓN INFERIOR DE IMPRESIÓN */}
-            <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+            <div className="pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
               <span className="text-xs text-slate-500">
-                Imprime en impresora térmica de etiquetas (Zebra/Xprinter) o papel adhesivo carta.
+                Imprime en impresora térmica de stickers adhesivos (Zebra / Xprinter 4x6") o papel autoadhesivo carta.
               </span>
               <button
                 type="button"
                 onClick={() => window.print()}
-                className="bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center space-x-1.5 shadow-md active:scale-95 transition-all"
+                className="bg-slate-900 hover:bg-slate-800 text-white font-black px-4 py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1.5 shadow-md active:scale-95 transition-all"
               >
                 <Printer className="w-4 h-4" />
                 <span>Mandar a Imprimir ({selectedBoxIndexForLabel === 'ALL' ? `${selectedLabelOrder.boxesCount} Cajas` : `Caja ${selectedBoxIndexForLabel}`})</span>
