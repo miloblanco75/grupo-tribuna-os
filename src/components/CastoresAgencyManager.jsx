@@ -1972,62 +1972,78 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
           {portalTab === 'promo-pass' && (
             <div className="max-w-xl mx-auto space-y-4">
               
-              <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-amber-300 shadow-xl space-y-6 text-center print:border-black" id="printable-merchant-pass">
+              <div className="bg-white rounded-3xl p-6 sm:p-8 border-2 border-slate-900 shadow-xl space-y-5 text-center print:border-black print:shadow-none" id="printable-merchant-pass">
                 
-                {/* Header del Pase */}
-                <div className="space-y-1">
-                  <div className="inline-flex items-center space-x-2 bg-slate-950 text-white px-3 py-1 rounded-full text-xs font-black">
-                    <span>🎄 GRUPO TRIBUNA</span>
-                    <span>·</span>
-                    <span className="text-amber-400">AGENCIA CASTORES</span>
+                {/* Header Directo y Oficial */}
+                <div className="flex items-center justify-between border-b-2 border-slate-900 pb-3">
+                  <div className="flex items-center space-x-2">
+                    <span className="bg-slate-950 text-white font-black text-xs px-2.5 py-1 rounded">
+                      CASTORES
+                    </span>
+                    <span className="text-xs font-black text-slate-800 tracking-tight">
+                      AGENCIA OFICIAL CHIGNAHUAPAN
+                    </span>
                   </div>
-                  <h3 className="text-xl sm:text-2xl font-black text-slate-900 mt-2">
-                    ¡Compra Todas las Esferas que Quieras!
+                  <span className="bg-amber-400 text-slate-950 font-black text-[10px] px-2.5 py-1 rounded-md uppercase tracking-wider">
+                    ENVÍOS A TODO MÉXICO
+                  </span>
+                </div>
+
+                {/* Titular de Alto Impacto para el Turista */}
+                <div className="py-2 space-y-1">
+                  <span className="text-xs font-black uppercase text-amber-600 tracking-widest block">
+                    ¿No te caben en la cajuela?
+                  </span>
+                  <h3 className="text-2xl sm:text-3xl font-black text-slate-950 leading-tight">
+                    ¡COMPRA LAS ESFERAS QUE QUIERAS!
                   </h3>
-                  <p className="text-xs text-slate-600 max-w-md mx-auto">
-                    Nosotros nos encargamos de que viajen seguras y empacadas con burbuja antishock hasta la puerta de tu hogar en cualquier parte de México.
+                  <p className="text-sm font-bold text-slate-700">
+                    Nosotros te las empacamos y enviamos seguras hasta la puerta de tu hogar.
                   </p>
                 </div>
 
-                {/* Tarjeta Destacada con el Número de Cliente del Productor */}
-                <div className="bg-gradient-to-br from-amber-50 to-yellow-50 p-6 rounded-3xl border-2 border-dashed border-amber-400 space-y-3">
-                  <span className="text-xs font-bold text-amber-800 uppercase tracking-widest block">
-                    Comercio Afiliado Autorizado:
+                {/* Código del Taller Afiliado */}
+                <div className="bg-amber-50 border-2 border-dashed border-amber-400 p-5 rounded-2xl space-y-2">
+                  <span className="text-[11px] font-black uppercase tracking-wider text-amber-950 block">
+                    TALLER AFILIADO AUTORIZADO:
                   </span>
-                  <div className="text-xl font-black text-slate-900">
+                  <div className="text-lg font-black text-slate-900">
                     {activePortalMerchant ? activePortalMerchant.businessName : 'Taller Artesanal'}
                   </div>
-                  
-                  <div className="bg-white py-3 px-5 rounded-2xl inline-block shadow-sm border border-amber-200">
-                    <span className="text-[10px] text-slate-400 font-bold block uppercase">Muestra este folio en bodega:</span>
-                    <span className="text-2xl sm:text-3xl font-mono font-black text-emerald-700 tracking-wider">
+                  <div className="inline-block bg-white border-2 border-slate-900 px-6 py-2 rounded-xl shadow-xs">
+                    <span className="text-[10px] text-slate-400 font-black block uppercase">Código de Taller:</span>
+                    <span className="text-3xl font-mono font-black text-emerald-700 tracking-widest">
                       {activePortalMerchant ? activePortalMerchant.clientNumber : 'CAS-CHIG-001'}
                     </span>
                   </div>
-
-                  <p className="text-[11px] text-slate-600 font-medium">
-                    Presentando este folio obtienes atención preferencial y seguro de protección contra roturas en tu envío.
+                  <p className="text-[11px] font-bold text-slate-600">
+                    (Dilo al entregar en nuestra bodega para tu empaque antishock garantizado)
                   </p>
                 </div>
 
-                {/* Instrucciones para el Turista / Comprador */}
-                <div className="grid grid-cols-3 gap-2 text-left text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
-                  <div>
-                    <span className="font-black text-amber-700 text-sm block">Paso 1:</span>
-                    <p className="text-[11px] text-slate-600 mt-0.5">Elige y paga tus esferas en este taller sin preocuparte por el espacio en tu auto.</p>
+                {/* 3 Pasos Rápidos Visuales */}
+                <div className="grid grid-cols-3 gap-2 pt-1">
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <div className="text-2xl mb-1">🛍️</div>
+                    <div className="font-black text-xs text-slate-900">1. Compra aquí</div>
+                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">Sin límite de piezas</div>
                   </div>
-                  <div>
-                    <span className="font-black text-emerald-700 text-sm block">Paso 2:</span>
-                    <p className="text-[11px] text-slate-600 mt-0.5">Lleva tus compras a la Bodega Castores o solicita que pasemos por ellas.</p>
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <div className="text-2xl mb-1">🚚</div>
+                    <div className="font-black text-xs text-slate-900">2. Lleva a Bodega</div>
+                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">O pide recolección</div>
                   </div>
-                  <div>
-                    <span className="font-black text-sky-700 text-sm block">Paso 3:</span>
-                    <p className="text-[11px] text-slate-600 mt-0.5">Recibe en tu casa con guía de rastreo oficial en 24 a 48 horas.</p>
+                  <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl">
+                    <div className="text-2xl mb-1">🏠</div>
+                    <div className="font-black text-xs text-slate-900">3. Recibe en casa</div>
+                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">Con rastreo Castores</div>
                   </div>
                 </div>
 
-                <div className="text-xs text-slate-500 pt-1 border-t border-slate-100">
-                  📍 <strong>Agencia Castores:</strong> Libramiento Chignahuapan Km 2.8 · 📞 Tel: <strong>+52 797 971 4520</strong>
+                {/* Footer Directo */}
+                <div className="pt-2 border-t-2 border-slate-900 flex flex-col sm:flex-row items-center justify-between text-xs font-bold text-slate-800 gap-1">
+                  <div>📍 <strong>Bodega Hub:</strong> Libramiento Chignahuapan Km 2.8</div>
+                  <div>📲 <strong>WhatsApp:</strong> +52 797 971 4520</div>
                 </div>
 
               </div>
