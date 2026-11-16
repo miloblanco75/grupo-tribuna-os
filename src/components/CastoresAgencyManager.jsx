@@ -157,21 +157,21 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
   const [counterDestinationAddress, setCounterDestinationAddress] = useState('');
   const [counterDeliveryType, setCounterDeliveryType] = useState('Domicilio'); // 'Domicilio' | 'Ocurre Oficina Castores'
 
-  // Contenido detallado del envío (Esferas de Chignahuapan)
+  // Contenido detallado del envío (Paquetería General, Mercancía, Cajas o Artesanías)
   const [counterContentCategory, setCounterContentCategory] = useState(SPHERE_CONTENT_CATEGORIES[0].label);
-  const [counterPiecesCount, setCounterPiecesCount] = useState(120);
-  const [counterFragilityLevel, setCounterFragilityLevel] = useState('Alta Fragilidad - Cristal Soplado Artesanal');
-  const [counterItemsDescription, setCounterItemsDescription] = useState('Esferas tradicionales sopladas al soplete con decorado navideño espiral');
-  const [counterBoxesCount, setCounterBoxesCount] = useState(3);
-  const [counterPackagingId, setCounterPackagingId] = useState('pack-premium');
+  const [counterPiecesCount, setCounterPiecesCount] = useState(1);
+  const [counterFragilityLevel, setCounterFragilityLevel] = useState('Estándar - Manejo Ordinario de Paquetería');
+  const [counterItemsDescription, setCounterItemsDescription] = useState('Cajas con mercancía comercial surtida debidamente embalada');
+  const [counterBoxesCount, setCounterBoxesCount] = useState(1);
+  const [counterPackagingId, setCounterPackagingId] = useState('pack-standard');
   const [counterDeclaredValue, setCounterDeclaredValue] = useState(2500);
 
-  // Estados de Inspección Física, Blindaje contra Roturas y Evidencia Fotográfica
+  // Estados de Inspección Física, Blindaje contra Daños y Evidencia Fotográfica
   const [counterCheckVisualIntegrity, setCounterCheckVisualIntegrity] = useState(true);
   const [counterCheckAntishockPacking, setCounterCheckAntishockPacking] = useState(true);
   const [counterCheckSealedSecurityTape, setCounterCheckSealedSecurityTape] = useState(true);
   const [counterInspectionInspector, setCounterInspectionInspector] = useState('Rodrigo Castelán (Encargado Hub)');
-  const [counterInspectionNotes, setCounterInspectionNotes] = useState('Esferas inspeccionadas en mostrador ante el cliente. 0 piezas rotas registradas. Empacadas con celdas y cinta Castores.');
+  const [counterInspectionNotes, setCounterInspectionNotes] = useState('Bultos inspeccionados en mostrador ante el remitente. Sin daños de origen. Sellados con cinta de seguridad Castores.');
   const [counterEvidencePhoto, setCounterEvidencePhoto] = useState(null);
   const [counterWarrantyActive, setCounterWarrantyActive] = useState(true);
 
@@ -309,16 +309,14 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
     }
   };
 
-  // Manejador para seleccionar categoría de producto navideño
+  // Manejador para seleccionar categoría de envío (mercancía general, textiles, artesanías, etc.)
   const handleSelectContentCategory = (catLabel) => {
     setCounterContentCategory(catLabel);
     const cat = SPHERE_CONTENT_CATEGORIES.find(c => c.label === catLabel);
     if (cat) {
       setCounterFragilityLevel(cat.fragility);
       setCounterPiecesCount(cat.defaultPiecesPerBox * counterBoxesCount);
-      if (!counterItemsDescription || counterItemsDescription.includes('Esferas tradicionales')) {
-        setCounterItemsDescription(cat.desc);
-      }
+      setCounterItemsDescription(cat.desc);
     }
   };
 
@@ -598,7 +596,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
 
   // Impresión 100% aislada del letrero de mostrador usando un iframe invisible (evita bloqueo de popups y nunca imprime la web)
   const handlePrintCounterSign = () => {
-    const merchantName = activePortalMerchant ? activePortalMerchant.businessName : 'Taller Artesanal de Esferas';
+    const merchantName = activePortalMerchant ? activePortalMerchant.businessName : 'Comercio / Taller Afiliado';
     const clientCode = activePortalMerchant ? activePortalMerchant.clientNumber : 'CAS-CHIG-001';
 
     let printIframe = document.getElementById('chignahuapan-sign-print-frame');
@@ -752,14 +750,14 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
             <div class="brand-header">PAQUETERÍA CASTORES</div>
             <div class="brand-sub">Agencia Oficial Chignahuapan</div>
 
-            <div class="headline">¿NO TIENES ESPACIO EN TU AUTO?</div>
-            <div class="headline-green">¡TE LAS ENVIAMOS A CASA!</div>
+            <div class="headline">¿NO TIENES ESPACIO EN TU VEHÍCULO?</div>
+            <div class="headline-green">¡TE ENVIAMOS TUS PAQUETES A CASA!</div>
             <div class="body-text">
-              Compra todas las esferas que quieras. Nosotros te las empacamos y enviamos seguras a cualquier parte de México.
+              Envíos en general: compras, mercancías, ropa, cajas, artesanías y esferas seguras a cualquier ciudad de México por CASTORES.
             </div>
 
             <div class="code-card">
-              <div class="code-tag">Convenio de esta Tienda:</div>
+              <div class="code-tag">Convenio de esta Tienda / Negocio:</div>
               <div class="shop-title">${merchantName}</div>
               <div class="code-number">${clientCode}</div>
               <div class="code-help">Menciona este código en bodega para tu tarifa preferencial</div>
@@ -813,8 +811,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
       phone: regPhone.trim(),
       whatsapp: cleanPhone.slice(-10),
       workshopAddress: regAddress.trim() || 'Chignahuapan Centro, Pue.',
-      productsDescription: regProductsDescription.trim() || 'Esferas navideñas de cristal soplado y artesanías de temporada',
-      specialty: regProductsDescription.trim() || 'Artesanía local',
+      productsDescription: regProductsDescription.trim() || 'Mercancía general, textiles, calzado o artesanías',
+      specialty: regProductsDescription.trim() || 'Comercio / Taller local',
       rating: 5.0,
       yearsInBusiness: 1,
       negotiatedPickupFee: 60.00,
@@ -951,12 +949,12 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
             </div>
 
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black tracking-tight text-white leading-tight">
-              Agencia de Última Milla & Consolidación para Productores de Esferas
+              Agencia de Envíos en General & Carga Castores · Hub Chignahuapan
             </h1>
 
             <p className="text-slate-300 text-xs sm:text-sm leading-relaxed">
-              <strong>Solución al cuello de botella comercial:</strong> En Chignahuapan la gente compra esfera pero <em>solo puede comprar lo que puede cargar</em>. 
-              Con nuestra agencia de paquetería Castores, los talleres y artesanos pueden vender sin límite de volumen. Sus compradores depositan las cajas en nuestra bodega o nosotros las recolectamos, viajando aseguradas con protección frágil a cualquier ciudad de México.
+              <strong>Servicio Integral de Paquetería y Carga:</strong> Envíos a toda la República de mercancía general, comercio local, cajas, paquetes, artesanías, textiles, esferas y carga comercial. 
+              Recibimos en nuestra bodega hub o recolectamos directamente en comercios y domicilios, con salidas troncales diarias a la terminal central de Castores en Puebla.
             </p>
 
             <div className="flex flex-wrap items-center gap-3 pt-1 text-xs text-slate-300">
@@ -1144,7 +1142,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-black text-slate-800 flex items-center space-x-1.5">
                     <Store className="w-4 h-4 text-emerald-600" />
-                    <span>1. Comercio o Productor que Vendió la Esfera:</span>
+                    <span>1. Remitente: Comercio, Empresa, Taller o Cliente Afiliado:</span>
                   </label>
                   <button
                     type="button"
@@ -1155,7 +1153,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     className="text-[11px] text-emerald-700 font-bold hover:underline flex items-center space-x-1"
                   >
                     <Plus className="w-3 h-3" />
-                    <span>Inscribir Nuevo Productor</span>
+                    <span>Inscribir Nuevo Afiliado</span>
                   </button>
                 </div>
 
@@ -1381,17 +1379,17 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <div className="space-y-4 pt-3 border-t border-slate-100">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
                   <span className="text-xs font-black text-slate-800 uppercase tracking-wider block">
-                    3. ¿Qué Contiene el Envío? (Esferas & Artesanías de Cristal):
+                    3. ¿Qué Contiene el Envío? (Paquetería General, Mercancías, Cajas o Artesanías):
                   </span>
                   <span className="text-[11px] text-amber-700 font-bold bg-amber-50 px-2 py-0.5 rounded-full border border-amber-200">
-                    Inspección & Declaración Obligatoria Castores
+                    Inspección & Declaración Castores
                   </span>
                 </div>
 
                 {/* FILA 1: BULTOS, PIEZAS Y CATEGORÍA */}
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Cajas Recibidas:</label>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Cajas / Bultos Recibidos:</label>
                     <input
                       type="number"
                       min="1"
@@ -1403,7 +1401,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   </div>
 
                   <div>
-                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Piezas Totales de Esferas:</label>
+                    <label className="text-[11px] font-bold text-slate-700 block mb-1">Piezas / Artículos Totales:</label>
                     <input
                       type="number"
                       min="1"
@@ -1412,7 +1410,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       className="w-full px-3 py-2 bg-amber-50 border border-amber-300 rounded-xl text-xs font-black text-amber-950 focus:outline-none focus:bg-white"
                     />
                     <span className="text-[10px] text-slate-400 block mt-0.5">
-                      ~{Math.round(counterPiecesCount / counterBoxesCount)} pzas por caja
+                      ~{Math.round(counterPiecesCount / counterBoxesCount)} artículos por bulto
                     </span>
                   </div>
 
@@ -1493,7 +1491,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     required
                     value={counterItemsDescription}
                     onChange={(e) => setCounterItemsDescription(e.target.value)}
-                    placeholder="Ej. Esferas clásicas N°6 espiral rubí y oro, figuras con escarcha blanca y campanas de cristal"
+                    placeholder="Ej. Cajas con mercancía comercial surtida, ropa y calzado, artesanías de madera o esferas decoradas"
                     className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                   />
                 </div>
@@ -1502,10 +1500,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <div className="bg-gradient-to-r from-emerald-50 to-teal-50 p-3.5 rounded-2xl border border-emerald-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
                   <div className="space-y-0.5">
                     <span className="text-[10px] uppercase font-black text-emerald-800 tracking-wider block">
-                      🔮 Resumen de Contenido Declarado:
+                      📦 Resumen de Contenido Declarado:
                     </span>
                     <p className="font-bold text-slate-900">
-                      {counterBoxesCount} {counterBoxesCount === 1 ? 'Caja' : 'Cajas'} · <span className="text-emerald-700 font-black">{counterPiecesCount} Esferas en Total</span> ({counterContentCategory})
+                      {counterBoxesCount} {counterBoxesCount === 1 ? 'Caja' : 'Cajas'} · <span className="text-emerald-700 font-black">{counterPiecesCount} {counterPiecesCount === 1 ? 'Pieza / Artículo' : 'Piezas / Artículos'} en Total</span> ({counterContentCategory})
                     </p>
                     <p className="text-[11px] text-slate-600 truncate max-w-md">
                       Detalle: {counterItemsDescription}
@@ -1543,10 +1541,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     />
                     <div className="text-xs">
                       <span className="font-bold text-slate-900 block">
-                        1. Inspección visual completada (0 piezas rotas al momento de ingreso a bodega)
+                        1. Inspección visual completada (0 roturas o daños al momento de ingreso a bodega)
                       </span>
                       <span className="text-slate-500 text-[11px]">
-                        Se abrieron las cajas en mostrador ante el cliente y se comprobó que no hay esferas estrelladas de origen.
+                        Se verificaron los paquetes en mostrador ante el cliente y se comprobó que no presentan daños de origen.
                       </span>
                     </div>
                   </label>
@@ -1560,10 +1558,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     />
                     <div className="text-xs">
                       <span className="font-bold text-slate-900 block">
-                        2. Celdas antishock y amortiguamiento verificado
+                        2. Embalaje, protección y amortiguamiento verificado
                       </span>
                       <span className="text-slate-500 text-[11px]">
-                        Las esferas cuentan con separación física individual (alveolos de cartón/burbuja), sin holguras que provoquen golpes internos.
+                        El paquete o caja cuenta con protección interna adecuada (burbuja, cartón, celdas o fleje), sin holguras que provoquen golpes.
                       </span>
                     </div>
                   </label>
@@ -1605,7 +1603,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       type="text"
                       value={counterInspectionNotes}
                       onChange={(e) => setCounterInspectionNotes(e.target.value)}
-                      placeholder="Ej. Esferas en óptimo estado, sin fisuras de taller, celdas acolchadas colocadas."
+                      placeholder="Ej. Mercancía en óptimo estado, sin daños de origen, empaque reforzado y sellado."
                       className="w-full px-3 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                     />
                   </div>
@@ -1622,7 +1620,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                         Foto Testigo de la Caja Abierta (Opcional):
                       </span>
                       <span className="text-slate-500 text-[11px]">
-                        {counterEvidencePhoto ? '✅ Foto de evidencia cargada y lista para archivo.' : 'Toma una foto de las esferas dentro de la caja antes de encintar para blindar el flete.'}
+                        {counterEvidencePhoto ? '✅ Foto de evidencia cargada y lista para archivo.' : 'Toma una foto del paquete o mercancía abierta antes de encintar para blindar el flete ante cualquier reclamo.'}
                       </span>
                     </div>
                   </div>
@@ -1977,8 +1975,8 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                       </div>
 
                       <div className="bg-slate-50 p-3.5 rounded-2xl border border-slate-100 space-y-1">
-                        <span className="font-bold text-slate-400 uppercase text-[10px] block">Productos que Vende:</span>
-                        <p className="font-semibold text-slate-800">{activePortalMerchant.productsDescription || 'Esferas artesanales y decoraciones navideñas'}</p>
+                        <span className="font-bold text-slate-400 uppercase text-[10px] block">Giro / Productos o Mercancía:</span>
+                        <p className="font-semibold text-slate-800">{activePortalMerchant.productsDescription || 'Mercancía general, textiles o artesanías'}</p>
                       </div>
                     </div>
                   </div>
@@ -2081,7 +2079,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     required
                     value={regBusinessName}
                     onChange={(e) => setRegBusinessName(e.target.value)}
-                    placeholder="Ej. Taller Artesanal Las Esferas de la Sierra"
+                    placeholder="Ej. Distribuidora Sierra Norte, Taller Don Chucho, Tienda La Cascada, etc."
                     className="w-full px-3.5 py-2.5 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:bg-white focus:ring-2 focus:ring-emerald-500/20"
                   />
                 </div>
@@ -2090,49 +2088,49 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Nombre de la Persona de Contacto / Propietario *:</label>
                     <input
-                      type="text"
-                      required
-                      value={regContactName}
-                      onChange={(e) => setRegContactName(e.target.value)}
-                      placeholder="Ej. Don Jesús Rivera"
-                      className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Teléfono Celular / WhatsApp *:</label>
-                    <input
-                      type="tel"
-                      required
-                      value={regPhone}
-                      onChange={(e) => setRegPhone(e.target.value)}
-                      placeholder="Ej. 797 102 3344"
-                      className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Dirección Física en Chignahuapan (con referencias):</label>
-                  <input
                     type="text"
-                    value={regAddress}
-                    onChange={(e) => setRegAddress(e.target.value)}
-                    placeholder="Ej. Calle Romero Vargas #45, Barrio de Teotlalpan (frente a la capilla)"
+                    required
+                    value={regContactName}
+                    onChange={(e) => setRegContactName(e.target.value)}
+                    placeholder="Ej. Don Jesús Rivera"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                   />
                 </div>
 
                 <div>
-                  <label className="text-xs font-bold text-slate-700 block mb-1">Productos que Vendes (Mención / Descripción):</label>
-                  <textarea
-                    rows={3}
-                    value={regProductsDescription}
-                    onChange={(e) => setRegProductsDescription(e.target.value)}
-                    placeholder="Ej. Esferas tradicionales de vidrio soplado números 4, 6 y 8, figuras de óleo, campanas, coronas navideñas con follaje y árboles miniatura."
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Teléfono Celular / WhatsApp *:</label>
+                  <input
+                    type="tel"
+                    required
+                    value={regPhone}
+                    onChange={(e) => setRegPhone(e.target.value)}
+                    placeholder="Ej. 797 102 3344"
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Dirección Física en Chignahuapan (con referencias):</label>
+                <input
+                  type="text"
+                  value={regAddress}
+                  onChange={(e) => setRegAddress(e.target.value)}
+                  placeholder="Ej. Calle Romero Vargas #45, Barrio de Teotlalpan (frente a la capilla)"
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Giro / Productos o Mercancía que Vendes o Envías *:</label>
+                <textarea
+                  rows={3}
+                  value={regProductsDescription}
+                  onChange={(e) => setRegProductsDescription(e.target.value)}
+                  placeholder="Ej. Mercancía comercial general, ropa y cobijas de lana, artesanías, esferas de vidrio, herramientas, calzado o refacciones."
+                  className="w-full px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white"
+                />
+              </div>
 
                 <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-2xl space-y-1 text-xs text-emerald-900">
                   <div className="flex items-center space-x-1.5 font-black">
@@ -2176,13 +2174,13 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 {/* Mensaje de Alto Impacto */}
                 <div className="space-y-1.5 py-1">
                   <h2 className="text-2xl sm:text-3xl font-black text-slate-950 leading-tight uppercase">
-                    ¿NO TIENES ESPACIO EN TU AUTO?
+                    ¿NO TIENES ESPACIO EN TU VEHÍCULO?
                   </h2>
                   <div className="text-xl sm:text-2xl font-black text-emerald-800 uppercase">
-                    ¡TE LAS ENVIAMOS A CASA!
+                    ¡TE ENVIAMOS TUS PAQUETES A CASA!
                   </div>
                   <p className="text-xs font-semibold text-slate-600 max-w-sm mx-auto">
-                    Compra todas las esferas que quieras. Nosotros te las empacamos y enviamos seguras a cualquier parte de México.
+                    Envíos en general: compras, mercancías, ropa, cajas, artesanías y esferas seguras a cualquier parte de México.
                   </p>
                 </div>
 
@@ -2192,7 +2190,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     CONVENIO DE ESTA TIENDA:
                   </div>
                   <div className="text-sm sm:text-base font-black text-slate-900">
-                    {activePortalMerchant ? activePortalMerchant.businessName : 'Taller Artesanal'}
+                    {activePortalMerchant ? activePortalMerchant.businessName : 'Comercio / Taller Afiliado'}
                   </div>
                   <div className="text-3xl sm:text-4xl font-mono font-black text-slate-950 tracking-widest py-1">
                     {activePortalMerchant ? activePortalMerchant.clientNumber : 'CAS-CHIG-001'}
@@ -2224,7 +2222,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                 <button
                   type="button"
                   onClick={() => {
-                    const text = `🎄 ¡Hola! Si compras en *${activePortalMerchant?.businessName}*, puedes enviar todas tus esferas por paquetería Castores presentando nuestro Folio Oficial: *${activePortalMerchant?.clientNumber}* en la Bodega Hub Chignahuapan. Viajan aseguradas a cualquier ciudad de México.`;
+                    const text = `📦 ¡Hola! Si compras en *${activePortalMerchant?.businessName}*, puedes enviar todas tus compras y paquetes por paquetería Castores presentando nuestro Folio Oficial: *${activePortalMerchant?.clientNumber}* en la Bodega Hub Chignahuapan. Viajan asegurados a cualquier ciudad de México.`;
                     navigator.clipboard.writeText(text);
                     alert('📋 ¡Texto promocional copiado al portapapeles! Listo para enviar a tus clientes por WhatsApp.');
                   }}
@@ -2349,10 +2347,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   {/* Productos que Vende */}
                   <div className="text-xs space-y-1">
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">
-                      Productos que Vende:
+                      Giro / Mercancía:
                     </span>
                     <p className="text-slate-700 bg-white p-2 rounded-xl border border-slate-200 line-clamp-2 font-medium">
-                      {merchant.productsDescription || 'Esferas navideñas de cristal y artesanía'}
+                      {merchant.productsDescription || 'Mercancía comercial general, textiles y artesanías'}
                     </p>
                   </div>
 
@@ -2642,10 +2640,10 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               </div>
 
               <div className="bg-emerald-50/70 p-3.5 rounded-2xl border border-emerald-200 space-y-0.5">
-                <span className="text-emerald-800 font-bold uppercase text-[10px] block">Piezas de Esferas Totales:</span>
+                <span className="text-emerald-800 font-bold uppercase text-[10px] block">Piezas / Artículos en Manifiesto:</span>
                 <div className="flex items-baseline space-x-1.5">
                   <span className="text-xl font-black text-emerald-900">{totalSelectedPieces.toLocaleString()}</span>
-                  <span className="text-emerald-700 text-[11px]">esferas protegidas</span>
+                  <span className="text-emerald-700 text-[11px]">artículos declarados</span>
                 </div>
               </div>
 
@@ -2740,7 +2738,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     </th>
                     <th className="py-3 px-3">Folio & Guía</th>
                     <th className="py-3 px-3">Cliente / Destinatario & Origen</th>
-                    <th className="py-3 px-3">Contenido Detallado de Esferas</th>
+                    <th className="py-3 px-3">Contenido Declarado</th>
                     <th className="py-3 px-3">Bultos & Embalaje</th>
                     <th className="py-3 px-3 text-center">Estado para este Viaje</th>
                   </tr>
@@ -2804,11 +2802,11 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           )}
                         </td>
 
-                        {/* Contenido Detallado de Esferas */}
+                        {/* Contenido Declarado */}
                         <td className="py-3.5 px-3 max-w-xs">
                           <div className="flex flex-wrap items-center gap-1 mb-1">
                             <span className="bg-amber-100 text-amber-950 font-black px-2 py-0.5 rounded-md text-[10px] border border-amber-200">
-                              {ord.contentCategory || '🔮 Esferas Tradicionales'}
+                              {ord.contentCategory || '📦 Mercancía General'}
                             </span>
                             <span className="bg-emerald-100 text-emerald-900 font-black px-2 py-0.5 rounded-md text-[10px] border border-emerald-300">
                               {pieces.toLocaleString()} Piezas
@@ -2921,7 +2919,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   Declaración de Recepción en Tránsito:
                 </span>
                 <p>
-                  "Yo, <strong className="text-white">{shuttleConfig.assignedDriver}</strong>, operador acreditado con Licencia Federal <strong className="text-white">{driverLicenseNumber}</strong> a cargo de la unidad <strong className="text-white">{shuttleConfig.assignedUnit}</strong> (Placas: <strong className="text-white">{vehiclePlates}</strong>), hago constar que recibo en este acto bajo mi entera responsabilidad y custodia los <strong className="text-emerald-400">{totalSelectedBoxes} bultos / cajas</strong> conteniendo <strong className="text-emerald-400">{totalSelectedPieces.toLocaleString()} piezas de esferas de cristal</strong> de los clientes seleccionados en este manifiesto, debidamente precintadas con cinta inviolable Castores y en perfecto estado exterior, comprometiéndome a su custodia y traslado directo sin escalas no autorizadas hacia la Terminal Castores Puebla."
+                  "Yo, <strong className="text-white">{shuttleConfig.assignedDriver}</strong>, operador acreditado con Licencia Federal <strong className="text-white">{driverLicenseNumber}</strong> a cargo de la unidad <strong className="text-white">{shuttleConfig.assignedUnit}</strong> (Placas: <strong className="text-white">{vehiclePlates}</strong>), hago constar que recibo en este acto bajo mi entera responsabilidad y custodia los <strong className="text-emerald-400">{totalSelectedBoxes} bultos / cajas</strong> conteniendo <strong className="text-emerald-400">{totalSelectedPieces.toLocaleString()} piezas / artículos declarados</strong> de paquetería general, mercancías y artesanías de los clientes seleccionados en este manifiesto, debidamente precintadas con cinta inviolable Castores y en perfecto estado exterior, comprometiéndome a su custodia y traslado directo sin escalas no autorizadas hacia la Terminal Castores Puebla."
                 </p>
               </div>
 
@@ -3183,22 +3181,22 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Contenido Declarado:</span>
                 <span className="font-black text-amber-900 text-right">
-                  {selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40)} Esferas
+                  {selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40)} Piezas / Artículos
                   <span className="text-[10px] text-slate-500 block font-normal">
-                    {selectedReceiptOrder.contentCategory || 'Esferas Tradicionales'}
+                    {selectedReceiptOrder.contentCategory || 'Mercancía General'}
                   </span>
                 </span>
               </div>
               {selectedReceiptOrder.contentDetails && (
                 <div className="py-1 border-b border-slate-100 text-[11px] text-slate-600">
-                  <span className="font-bold text-slate-500 block">Detalle de Modelos:</span>
+                  <span className="font-bold text-slate-500 block">Detalle de Modelos / Artículos:</span>
                   <span className="font-medium">{selectedReceiptOrder.contentDetails}</span>
                 </div>
               )}
               <div className="flex justify-between py-1 border-b border-slate-100">
                 <span className="text-slate-500">Protección & Fragilidad:</span>
                 <span className="font-bold text-slate-800 text-[11px]">
-                  {selectedReceiptOrder.fragilityLevel || 'Alta Fragilidad - Cristal Soplado'}
+                  {selectedReceiptOrder.fragilityLevel || 'Protección Estándar / Delicado'}
                 </span>
               </div>
               <div className="flex justify-between py-1 border-b border-slate-100">
@@ -3219,11 +3217,11 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   <span>Dictamen de Inspección Física:</span>
                 </span>
                 <span className="bg-emerald-200 text-emerald-950 font-black px-2 py-0.5 rounded-full text-[10px]">
-                  0 Roturas al Recibir
+                  0 Daños al Recibir
                 </span>
               </div>
               <p className="text-[11px] text-emerald-900 font-medium leading-relaxed">
-                {selectedReceiptOrder.inspectionData?.notes || 'Esferas inspeccionadas en mostrador ante el cliente. 0 piezas rotas registradas.'}
+                {selectedReceiptOrder.inspectionData?.notes || 'Paquete y mercancía inspeccionada en mostrador ante el cliente. 0 daños o anomalías registradas.'}
               </p>
               <div className="flex justify-between items-center text-[10px] text-emerald-800 pt-0.5 border-t border-emerald-200/60">
                 <span>Inspector: <strong>{selectedReceiptOrder.inspectionData?.inspectedBy || 'Rodrigo Castelán (Hub)'}</strong></span>
@@ -3261,19 +3259,19 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                   type="button"
                   onClick={() => {
                     const pieces = selectedReceiptOrder.piecesCount || (selectedReceiptOrder.boxesCount * 40);
-                    const cat = selectedReceiptOrder.contentCategory || 'Esferas Tradicionales';
-                    const text = `🎄 *AGENCIA CASTORES CHIGNAHUAPAN*\n` +
-                      `¡Hola ${selectedReceiptOrder.buyerName}! Tu envío de esferas ha sido recibido e inspeccionado en nuestra Bodega Hub.\n\n` +
+                    const cat = selectedReceiptOrder.contentCategory || 'Mercancía General';
+                    const text = `📦 *AGENCIA CASTORES CHIGNAHUAPAN*\n` +
+                      `¡Hola ${selectedReceiptOrder.buyerName}! Tu envío ha sido recibido e inspeccionado en nuestra Bodega Hub.\n\n` +
                       `📋 *Guía Oficial Castores:* ${selectedReceiptOrder.castoresGuideNumber}\n` +
                       `📍 *Destino:* ${selectedReceiptOrder.destinationCity}\n` +
                       `📦 *Bultos:* ${selectedReceiptOrder.boxesCount} cajas (${selectedReceiptOrder.packagingName})\n` +
-                      `🔮 *Contenido:* ${pieces} esferas (${cat})\n` +
-                      `🛡️ *Inspección Física:* Certificada en mostrador (0 esferas rotas registradas de origen y precintado inviolable Castores)\n` +
+                      `📦 *Contenido:* ${pieces} piezas / artículos (${cat})\n` +
+                      `🛡️ *Inspección Física:* Certificada en mostrador (0 daños registrados de origen y precintado inviolable Castores)\n` +
                       `🛡️ *Garantía Antishock:* Activa ($${(selectedReceiptOrder.warrantyCoverageMXN || 2500).toLocaleString()} MXN)\n` +
                       `🚚 *Estatus:* ${selectedReceiptOrder.castoresStatus}\n\n` +
-                      `¡Gracias por tu compra en ${selectedReceiptOrder.artisanBusiness}!`;
+                      `¡Gracias por tu envío con ${selectedReceiptOrder.artisanBusiness}!`;
                     navigator.clipboard.writeText(text);
-                    alert('📋 ¡Notificación detallada para el comprador copiada! Listo para enviar por WhatsApp.');
+                    alert('📋 ¡Notificación detallada para el cliente copiada! Listo para enviar por WhatsApp.');
                   }}
                   className="flex-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1"
                 >
@@ -3796,33 +3794,33 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                           CONTENIDO DECLARADO EN ESTA CAJA:
                         </span>
                         <span className="bg-emerald-100 text-emerald-900 font-black text-[11px] px-2 py-0.5 rounded-md border border-emerald-300">
-                          ~{piecesInThisBox} Esferas Artesanales
+                          ~{piecesInThisBox} Piezas / Artículos
                         </span>
                       </div>
                       <div className="font-bold text-slate-900 text-xs">
-                        {selectedLabelOrder.contentCategory || 'Esferas Tradicionales de Cristal'}
+                        {selectedLabelOrder.contentCategory || 'Mercancía General'}
                       </div>
                       <p className="text-[11px] text-slate-600 line-clamp-1">
                         {selectedLabelOrder.contentDetails || selectedLabelOrder.itemsSummary}
                       </p>
                     </div>
 
-                    {/* SELLO DE SEGURIDAD ROJO: MUY FRÁGIL CRISTAL SOPLADO */}
+                    {/* SELLO DE SEGURIDAD Y NIVEL DE PROTECCIÓN */}
                     <div className="bg-rose-50 border-2 border-rose-600 text-rose-950 p-2.5 rounded-xl flex items-center justify-between gap-2">
                       <div className="flex items-center space-x-2">
                         <div className="text-xl">⚠️</div>
                         <div>
                           <span className="font-black text-xs text-rose-900 uppercase tracking-wider block leading-none">
-                            ALTA FRAGILIDAD · CRISTAL SOPLADO DE CHIGNAHUAPAN
+                            {selectedLabelOrder.fragilityLevel ? selectedLabelOrder.fragilityLevel.toUpperCase() : 'MANEJO DELICADO · PAQUETERÍA Y CARGA'}
                           </span>
                           <span className="text-[10px] text-rose-700 font-bold block mt-0.5">
-                            ↑↑ ESTE LADO ARRIBA · ESTIBA MÁXIMA 3 CAJAS · NO INVERTIR · MANEJAR CON GUANTES
+                            ↑↑ ESTE LADO ARRIBA · ESTIBA MÁXIMA 3 CAJAS · NO INVERTIR · TRASLADO CUIDADOSO
                           </span>
                         </div>
                       </div>
                       <div className="text-right shrink-0">
                         <span className="bg-rose-600 text-white font-black text-[9px] px-2 py-0.5 rounded-md uppercase tracking-wider">
-                          ANTISHOCK ACTIVO
+                          PROTECCIÓN ACTIVA
                         </span>
                       </div>
                     </div>
@@ -3831,7 +3829,7 @@ export default function CastoresAgencyManager({ onNavigateToCatalog, onNavigateT
                     <div className="bg-emerald-50 border border-emerald-400 p-2 rounded-xl flex items-center justify-between text-[10px] text-emerald-950 font-bold">
                       <div className="flex items-center space-x-1.5">
                         <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-                        <span>INSPECCIÓN EN BODEGA: 0 ROTURAS DE ORIGEN · CINTA CASTORES INVIOLABLE</span>
+                        <span>INSPECCIÓN EN BODEGA: 0 DAÑOS DE ORIGEN · CINTA CASTORES INVIOLABLE</span>
                       </div>
                       <span className="font-mono text-[9px] text-emerald-800 uppercase">
                         RECIBIÓ: {selectedLabelOrder.inspectionData?.inspectedBy || 'RODRIGO CASTELÁN (HUB)'}

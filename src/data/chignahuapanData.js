@@ -1,5 +1,5 @@
 // Datos iniciales de la División de Logística Chignahuapan & Alianza Grupo Castores
-// Grupo Tribuna - Acopio, Embalaje Frágil y Envíos Nacionales de Esferas Navideñas
+// Grupo Tribuna - Agencia de Envíos en General, Paquetería Comercial, Artesanías y Carga Castores
 
 export const CASTORES_ALLIANCE_INFO = {
   partnerName: 'Grupo Castores Paquetería y Cargas Consolidadas S.A. de C.V.',
@@ -114,35 +114,59 @@ export const INITIAL_SHUTTLE_CONFIG = {
 export const PACKAGING_CATALOG = [
   {
     id: 'pack-standard',
-    name: 'Embalaje Estándar Esferas',
-    description: 'Caja de cartón corrugado reforzado 40x40x40 cm, 2 capas de plástico microburbuja, cinta de alta seguridad "MUY FRÁGIL"',
+    name: 'Embalaje Estándar Antishock',
+    description: 'Caja de cartón corrugado reforzado 40x40x40 cm, 2 capas de plástico microburbuja, cinta de alta seguridad inviolable Castores',
     costToCustomer: 75.00,
     costMaterialTribuna: 35.00,
     netProfit: 40.00,
-    recommendedFor: 'Cajas de hasta 60 esferas medianas tradicionales'
+    recommendedFor: 'Cajas de paquetería general, ropa, calzado, artesanías o artículos frágiles'
   },
   {
     id: 'pack-premium',
-    name: 'Embalaje Premium Panal Antishock',
+    name: 'Embalaje Premium Panal / Doble Refuerzo',
     description: 'Caja doble corrugado 60x50x50 cm con rejillas alveoladas individuales (tipo panal), esquineros rígidos y burbuja de 1/2"',
     costToCustomer: 135.00,
     costMaterialTribuna: 60.00,
     netProfit: 75.00,
-    recommendedFor: 'Esferas grandes de colección, figuras caladas y piezas con aplicaciones de cristal'
+    recommendedFor: 'Mercancía delicada, cristalería, figuras con relieve o piezas de alta fragilidad'
   },
   {
     id: 'pack-jumbo',
-    name: 'Embalaje Tarima / Jumbo Monumental',
+    name: 'Embalaje Tarima / Jumbo Consolidado',
     description: 'Caja triple onda paletizada, foam de polietileno de alta densidad, esquineros de acero/plástico y emplayado reforzado con sensor de inclinación',
     costToCustomer: 220.00,
     costMaterialTribuna: 95.00,
     netProfit: 125.00,
-    recommendedFor: 'Pedidos de mayoreo, figuras navideñas monumentales (nacimientos, ángeles gigantes)'
+    recommendedFor: 'Carga consolidada de mayoreo, bultos múltiples, refacciones o paquetes voluminosos'
   }
 ];
 
-// Categorías de Contenido Navideño de Chignahuapan para Guías y Manifiestos
-export const SPHERE_CONTENT_CATEGORIES = [
+// Categorías de Envíos en General (Paquetería, Mercancía, Artesanías, Esferas y Carga Castores)
+export const GENERAL_SHIPPING_CATEGORIES = [
+  {
+    id: 'paqueteria-general',
+    label: '📦 Paquetería General & Mercancía Comercial',
+    shortLabel: '📦 Mercancía General',
+    defaultPiecesPerBox: 1,
+    fragility: 'Estándar - Manejo Ordinario de Paquetería',
+    desc: 'Cajas de mercancía variada, productos de comercio local, artículos secos y paquetería estándar'
+  },
+  {
+    id: 'textiles-ropa',
+    label: '👕 Ropa, Calzado & Textiles Artesanales',
+    shortLabel: '👕 Ropa & Textiles',
+    defaultPiecesPerBox: 15,
+    fragility: 'Baja Fragilidad - Mercancía Textil / Confección',
+    desc: 'Cobijas, suéteres de lana, ropa típica, calzado y manufactura textil'
+  },
+  {
+    id: 'artesanias-madera-barro',
+    label: '🏺 Artesanías, Cerámica, Barro & Madera Tallada',
+    shortLabel: '🏺 Artesanías & Barro',
+    defaultPiecesPerBox: 10,
+    fragility: 'Media Fragilidad - Cerámica y Tallado en Madera',
+    desc: 'Alfarería, barro vidriado, tallado en madera, juguetes tradicionales y piezas decorativas'
+  },
   {
     id: 'esferas-clasicas',
     label: '🔮 Esferas Tradicionales Sopladas al Soplete (Lisas / Doble Textura)',
@@ -152,28 +176,12 @@ export const SPHERE_CONTENT_CATEGORIES = [
     desc: 'Esferas clásicas metalizadas lisas en dorado, rubí, plata y azul cobalto'
   },
   {
-    id: 'esferas-diamantadas',
-    label: '✨ Esferas Diamantadas & Escarchadas',
-    shortLabel: '✨ Diamantadas & Glitter',
-    defaultPiecesPerBox: 48,
-    fragility: 'Alta Fragilidad - Acabado con Escarcha y Purpurina',
-    desc: 'Esferas con aplicación diamantada, escarcha fina y destellos reflectivos'
-  },
-  {
     id: 'esferas-oleo',
-    label: '🎨 Esferas Decoradas al Óleo Fino / Pintadas a Mano',
-    shortLabel: '🎨 Decoradas al Óleo',
+    label: '🎨 Esferas Decoradas al Óleo / Pintadas a Mano & Cristalería',
+    shortLabel: '🎨 Esferas al Óleo & Cristal',
     defaultPiecesPerBox: 36,
-    fragility: 'Extrema Fragilidad - Arte Manual al Óleo',
-    desc: 'Piezas con motivos navideños artesanales: nochebuenas, paisajes nevados y detalles en oro'
-  },
-  {
-    id: 'esferas-led',
-    label: '💡 Esferas Monumentales con Luz LED & Microburbujas',
-    shortLabel: '💡 Con Luz LED',
-    defaultPiecesPerBox: 24,
-    fragility: 'Alta Fragilidad + Componente Electrónico',
-    desc: 'Esferas monumentales con circuito LED interno, nieve artificial y baterías'
+    fragility: 'Extrema Fragilidad - Cristal Soplado Decorado',
+    desc: 'Piezas artesanales decoradas al óleo, escarchadas, nochebuenas y copas de cristal'
   },
   {
     id: 'nacimientos-cristal',
@@ -185,36 +193,55 @@ export const SPHERE_CONTENT_CATEGORIES = [
   },
   {
     id: 'coronas-herreria',
-    label: '👑 Coronas Navideñas, Herrería & Centros de Mesa',
-    shortLabel: '👑 Herrería & Coronas',
-    defaultPiecesPerBox: 6,
-    fragility: 'Media Fragilidad - Estructura Rígida de Herrería',
-    desc: 'Coronas de forja con esferas tejidas y centros de mesa navideños'
+    label: '👑 Herrería Artística, Muebles Ligeros & Forja',
+    shortLabel: '👑 Herrería & Forja',
+    defaultPiecesPerBox: 4,
+    fragility: 'Media Fragilidad - Estructura Metálica / Forja',
+    desc: 'Lámparas, percheros, herrería artesanal, bases de forja y estructuras decorativas'
   },
   {
-    id: 'lote-surtido',
-    label: '📦 Lote Navideño Surtido (Esferas + Campanas + Faroles)',
-    shortLabel: '📦 Lote Mixto Navideño',
-    defaultPiecesPerBox: 50,
-    fragility: 'Alta Fragilidad Mixta',
-    desc: 'Variedad de esferas surtidas N°6, N°8, campanas y remates de pino'
+    id: 'refacciones-herramientas',
+    label: '🔧 Refacciones, Herramientas & Maquinaria Ligera',
+    shortLabel: '🔧 Refacciones & Equipos',
+    defaultPiecesPerBox: 3,
+    fragility: 'Estándar / Rígido - Carga Pesada o Mecánica',
+    desc: 'Refacciones automotrices, bombas de agua, herramienta manual y suministros de taller'
+  },
+  {
+    id: 'equipaje-mudanza-personal',
+    label: '🧳 Maletas, Equipaje de Turistas & Envíos Personales',
+    shortLabel: '🧳 Maletas & Equipaje',
+    defaultPiecesPerBox: 1,
+    fragility: 'Estándar - Artículos Personales y Compras',
+    desc: 'Equipaje de visitantes, compras personales de turistas y mudanzas parciales'
+  },
+  {
+    id: 'documentos-valijas',
+    label: '📄 Documentos Oficiales, Contratos & Valijas Express',
+    shortLabel: '📄 Documentos & Sobres',
+    defaultPiecesPerBox: 1,
+    fragility: 'Manejo Delicado de Documentos Inviolables',
+    desc: 'Sobres reforzados, contratos comerciales, escrituras, planos y trámites urgentes'
   }
 ];
 
-// Chips rápidos de contenido para agregar con un clic
+// Compatibilidad retroactiva
+export const SPHERE_CONTENT_CATEGORIES = GENERAL_SHIPPING_CATEGORIES;
+
+// Chips rápidos de contenido general para agregar con un solo clic
 export const CONTENT_QUICK_TAGS = [
-  '🔮 N°6 Clásica (80mm)',
-  '🔮 N°8 Mediana (100mm)',
-  '🔮 N°10 Jumbo (120mm)',
-  '✨ Diamantada Oro',
-  '🎨 Óleo Nochebuena',
-  '❄️ Paisaje Nevado',
-  '🔴 Rubí & Oro',
-  '⚪ Nieve Escarchada',
-  '💡 Luz Micro-LED',
-  '🔔 Campana Cristal',
-  '👑 Corona Herrería',
-  '🌟 Nacimiento Cristal'
+  '📦 Mercancía General',
+  '👕 Ropa y Textiles',
+  '🏺 Artesanía y Barro',
+  '🔮 Esferas de Cristal',
+  '🪵 Muebles / Madera',
+  '📄 Documentos / Sobre',
+  '🔧 Refacciones / Herramienta',
+  '🧳 Maletas / Equipaje',
+  '☕ Café y Alimentos Secos',
+  '🪟 Vidrio / Frágil',
+  '👑 Herrería / Forja',
+  '🎨 Cuadros / Decoración'
 ];
 
 // Clientes y Compradores Registrados / Frecuentes
