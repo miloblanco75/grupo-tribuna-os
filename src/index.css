@@ -72,3 +72,27 @@ input, select, textarea, button {
 ::-webkit-scrollbar-thumb:hover {
   background: #94a3b8;
 }
+
+/* Reglas de Impresión Limpia (Para Letreros, Manifiesto, Etiquetas y Recibos) */
+@media print {
+  /* Ocultar elementos de navegación y controles */
+  header, nav, aside, button, .no-print {
+    display: none !important;
+  }
+  
+  body {
+    background: white !important;
+    color: black !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Si se imprime el pase de mostrador, aislarlo en la página */
+  #printable-merchant-pass {
+    border: 3px solid #0f172a !important;
+    box-shadow: none !important;
+    margin: 0 auto !important;
+    max-width: 100% !important;
+    page-break-inside: avoid !important;
+  }
+}
